@@ -5,19 +5,14 @@
 #include "OtaInterface.h"
 #include "OtaPort.h"
 
-static const char hex[16] = "0123456789ABCDEF";
-
-
 void UART1_Init(void);
 void UART2_Init(void);
-void LedInit(void);
 uint8_t OTA_DebugSend(const char *data);
 	
 int main(void)
 {
 	UART1_Init();
 	UART2_Init();
-	LedInit();
 	
 	OTA_DebugSend("START");
 	GPIO_SetBits(GPIOC, GPIO_Pin_13);   // PC13 = 0
@@ -136,21 +131,4 @@ void UART2_Init(void)
 
     /* 使能 USART2 */
     USART_Cmd(USART2, ENABLE);
-}
-
-void LedInit(void)
-{
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-    /* 1. 使能 GPIOC 时钟 */
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
-
-    /* 2. 配置 PC13 为推挽输出 */
-    GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_13;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;      // 推挽输出
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;       // PC13 只能用 2MHz
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-    /* 3. 输出低电平 */
-    GPIO_SetBits(GPIOC, GPIO_Pin_13);   // PC13 = 0
 }

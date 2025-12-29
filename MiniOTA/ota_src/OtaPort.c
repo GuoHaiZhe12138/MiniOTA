@@ -7,7 +7,7 @@
   *
   *****************************************************************************/
 #include "OtaPort.h"
-#include "OtaTrans.h"
+#include "OtaXmodem.h"
 #include "string.h"
 #include "stm32f10x_flash.h"
 

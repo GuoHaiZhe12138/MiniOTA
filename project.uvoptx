@@ -151,7 +151,24 @@
           <Name>-T0</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint/>
+      <Breakpoint>
+        <Bp>
+          <Number>0</Number>
+          <Type>0</Type>
+          <LineNumber>35</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134219978</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\MiniOTA\ota_src\OtaCore.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\MiniOta\MiniOTA/ota_src/OtaCore.c\35</Expression>
+        </Bp>
+      </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
@@ -239,7 +256,7 @@
 
   <Group>
     <GroupName>Star</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -970,8 +987,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\MiniOTA\ota_src\OtaTrans.h</PathWithFileName>
-      <FilenameWithoutPath>OtaTrans.h</FilenameWithoutPath>
+      <PathWithFileName>.\MiniOTA\ota_src\OtaUtils.h</PathWithFileName>
+      <FilenameWithoutPath>OtaUtils.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -994,6 +1011,30 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
+      <PathWithFileName>.\MiniOTA\ota_src\OtaFlash.h</PathWithFileName>
+      <FilenameWithoutPath>OtaFlash.h</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>4</GroupNumber>
+      <FileNumber>62</FileNumber>
+      <FileType>5</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>.\MiniOTA\ota_src\OtaJump.h</PathWithFileName>
+      <FilenameWithoutPath>OtaJump.h</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>4</GroupNumber>
+      <FileNumber>63</FileNumber>
+      <FileType>5</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
       <PathWithFileName>.\MiniOTA\ota_interface\OtaPort.h</PathWithFileName>
       <FilenameWithoutPath>OtaPort.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
@@ -1001,7 +1042,7 @@
     </File>
     <File>
       <GroupNumber>4</GroupNumber>
-      <FileNumber>62</FileNumber>
+      <FileNumber>64</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1013,7 +1054,7 @@
     </File>
     <File>
       <GroupNumber>4</GroupNumber>
-      <FileNumber>63</FileNumber>
+      <FileNumber>65</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1025,13 +1066,61 @@
     </File>
     <File>
       <GroupNumber>4</GroupNumber>
-      <FileNumber>64</FileNumber>
+      <FileNumber>66</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\MiniOTA\ota_src\OtaTrans.c</PathWithFileName>
-      <FilenameWithoutPath>OtaTrans.c</FilenameWithoutPath>
+      <PathWithFileName>.\MiniOTA\ota_src\OtaJump.c</PathWithFileName>
+      <FilenameWithoutPath>OtaJump.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>4</GroupNumber>
+      <FileNumber>67</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>.\MiniOTA\ota_src\OtaUtils.c</PathWithFileName>
+      <FilenameWithoutPath>OtaUtils.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>4</GroupNumber>
+      <FileNumber>68</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>.\MiniOTA\ota_src\OtaFlash.c</PathWithFileName>
+      <FilenameWithoutPath>OtaFlash.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>4</GroupNumber>
+      <FileNumber>69</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>.\MiniOTA\ota_src\OtaXmodem.c</PathWithFileName>
+      <FilenameWithoutPath>OtaXmodem.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>4</GroupNumber>
+      <FileNumber>70</FileNumber>
+      <FileType>5</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>.\MiniOTA\ota_src\OtaXmodem.h</PathWithFileName>
+      <FilenameWithoutPath>OtaXmodem.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

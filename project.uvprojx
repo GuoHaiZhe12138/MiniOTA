@@ -49,7 +49,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\Objects\</OutputDirectory>
-          <OutputName>project</OutputName>
+          <OutputName>MiniOta</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>0</CreateHexFile>
@@ -58,7 +58,7 @@
           <ListingPath>.\Listings\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
-          <CreateBatchFile>0</CreateBatchFile>
+          <CreateBatchFile>1</CreateBatchFile>
           <BeforeCompile>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
@@ -82,7 +82,7 @@
           <AfterMake>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name></UserProg1Name>
+            <UserProg1Name>fromelf --bin --output "C:\Users\guo\Desktop\stm32_rpoject\MiniOta_BootLoader\Objects\MiniOta.bin" "C:\Users\guo\Desktop\stm32_rpoject\MiniOta_BootLoader\Objects\MiniOta.axf"</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -686,14 +686,24 @@
           <GroupName>MiniOTA</GroupName>
           <Files>
             <File>
-              <FileName>OtaTrans.h</FileName>
+              <FileName>OtaUtils.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\MiniOTA\ota_src\OtaTrans.h</FilePath>
+              <FilePath>.\MiniOTA\ota_src\OtaUtils.h</FilePath>
             </File>
             <File>
               <FileName>OtaInterface.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\MiniOTA\ota_interface\OtaInterface.h</FilePath>
+            </File>
+            <File>
+              <FileName>OtaFlash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\MiniOTA\ota_src\OtaFlash.h</FilePath>
+            </File>
+            <File>
+              <FileName>OtaJump.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\MiniOTA\ota_src\OtaJump.h</FilePath>
             </File>
             <File>
               <FileName>OtaPort.h</FileName>
@@ -711,9 +721,29 @@
               <FilePath>.\MiniOTA\ota_src\OtaPort.c</FilePath>
             </File>
             <File>
-              <FileName>OtaTrans.c</FileName>
+              <FileName>OtaJump.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\MiniOTA\ota_src\OtaTrans.c</FilePath>
+              <FilePath>.\MiniOTA\ota_src\OtaJump.c</FilePath>
+            </File>
+            <File>
+              <FileName>OtaUtils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\MiniOTA\ota_src\OtaUtils.c</FilePath>
+            </File>
+            <File>
+              <FileName>OtaFlash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\MiniOTA\ota_src\OtaFlash.c</FilePath>
+            </File>
+            <File>
+              <FileName>OtaXmodem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\MiniOTA\ota_src\OtaXmodem.c</FilePath>
+            </File>
+            <File>
+              <FileName>OtaXmodem.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\MiniOTA\ota_src\OtaXmodem.h</FilePath>
             </File>
           </Files>
         </Group>

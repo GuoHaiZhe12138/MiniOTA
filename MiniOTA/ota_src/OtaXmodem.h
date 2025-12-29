@@ -3,8 +3,8 @@
   * @brief          : Xmodem Table-Driven Refactored
   ******************************************************************************/
 
-#ifndef __OTA_XMODEM_H
-#define __OTA_XMODEM_H
+#ifndef __OTAXMODEM_H
+#define __OTAXMODEM_H
 
 #include <stdint.h>
 #include "OtaInterface.h"
@@ -27,12 +27,6 @@ typedef enum {
     XM_STATE_MAX
 } xm_state_t;
 
-/* ---------------- Flash Handle ---------------- */
-typedef struct {
-    uint32_t curr_addr;
-    uint16_t page_offset;
-    uint8_t  page_buf[OTA_FLASH_PAGE_SIZE];
-} flashHandle_t;
 
 /* ---------------- Xmodem Handle ---------------- */
 typedef struct {

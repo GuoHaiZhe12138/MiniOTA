@@ -7,8 +7,9 @@
   *
   *****************************************************************************/
 #include "OtaInterface.h"
-#include "OtaTrans.h"
+#include "OtaXmodem.h"
 #include "OtaPort.h"
+#include "OtaJump.h"
 
 void OTA_RunOTA(void)
 {
@@ -27,6 +28,11 @@ void OTA_RunOTA(void)
 			{
 				OTA_Delay1ms();
 			}
+		}
+		
+		if(OTA_XmodemRevCompFlag() == 2)
+		{
+			JumpToApp();
 		}
 	}
 }

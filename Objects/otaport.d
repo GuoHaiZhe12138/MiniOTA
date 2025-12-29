@@ -1,7 +1,7 @@
 .\objects\otaport.o: MiniOTA\ota_src\OtaPort.c
 .\objects\otaport.o: .\MiniOTA\ota_interface\OtaPort.h
 .\objects\otaport.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
-.\objects\otaport.o: MiniOTA\ota_src\OtaTrans.h
+.\objects\otaport.o: MiniOTA\ota_src\OtaXmodem.h
 .\objects\otaport.o: .\MiniOTA\ota_interface\OtaInterface.h
 .\objects\otaport.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\otaport.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
