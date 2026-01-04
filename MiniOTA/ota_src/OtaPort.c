@@ -8,8 +8,19 @@
   *****************************************************************************/
 #include "OtaPort.h"
 #include "OtaXmodem.h"
-#include "string.h"
+#include "OtaUtils.h"
 #include "stm32f10x_flash.h"
+
+uint8_t OTA_ShouldEnterIap(void)
+{
+	return GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_11);
+}
+
+// 外设逆初始化
+void OTA_PeripheralsDeInit(void)
+{
+	
+}
 
 void OTA_ReceiveTask(uint8_t byte)
 {
@@ -45,7 +56,7 @@ int OTA_DrvProgramHalfword(uint32_t addr, uint16_t data)
 // Flash页读取
 void OTA_DrvRead(uint32_t addr, uint8_t *buf, uint16_t len)
 {
-    memcpy(buf, (uint8_t *)addr, len);
+	OTA_MemCopy(buf,(uint8_t *)addr, len);
 }
 
 

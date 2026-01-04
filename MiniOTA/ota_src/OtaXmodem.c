@@ -12,7 +12,7 @@
 #include "stm32f10x.h"
 #include "stdio.h"
 
-static xmodem_t xm = {0};
+static xmodem_t xm;
 
 static uint8_t RecComp_Flag = 0;
 
@@ -37,14 +37,14 @@ static const xm_state_fn_t xm_state_handlers[XM_STATE_MAX] = {
 /* ---------------- API 实现 ---------------- */
 
 // Xmodem 初始化
-void OTA_XmodemInit(void)
+void OTA_XmodemInit(uint32_t addr)
 {
     memset(&xm, 0, sizeof(xmodem_t));
     xm.state = XM_WAIT_START;
     xm.expected_blk = 1; // Xmodem协议通常从包号1开始
     RecComp_Flag = 0;
     
-    FlashHandle_Init();
+    FlashHandle_Init(addr);
 }
 
 // 获取xmodemHandle
@@ -102,6 +102,7 @@ static void Handle_WaitStart(uint8_t ch)
         RecComp_Flag = 2;
 		return;
     }
+	OTA_DebugSend("[OTA][Error]:An Vnknown Character Was Read.\r\n");
 	RecComp_Flag = 0;
 }
 
@@ -119,6 +120,7 @@ static void Handle_WaitBlkInv(uint8_t ch)
     xm.blk_inv = ch;
     // 校验：包号 + 包号反码 必须等于 0xFF
     if ((uint8_t)(xm.blk + xm.blk_inv) != (uint8_t)0xFF) {
+		OTA_DebugSend("[OTA][Error]:Mismatched Package Serial Numbers And Inverse Codes\r\n");
         OTA_SendByte(XM_NAK);        // NAK
         xm.state = XM_WAIT_START;
     } else {
@@ -145,7 +147,7 @@ static void Handle_WaitCrc1(uint8_t ch)
     xm.state = XM_WAIT_CRC2;
 }
 
-// 等待后八位crc阶段 (逻辑修复重点区域)
+// 等待后八位crc阶段
 static void Handle_WaitCrc2(uint8_t ch)
 {
 	OTA_DebugSend("[OTA]:Get Crc2\r\n");
@@ -164,13 +166,12 @@ static void Handle_WaitCrc2(uint8_t ch)
             {
                 // 先进行一次flash写入，更新镜像
                 if (Flash_Write() != 0) {
-                    // 写入失败处理，通常可以发送CAN或无响应，此处发送NAK重试
-                    OTA_SendByte(XM_NAK);
                     xm.state = XM_WAIT_START;
                     return; 
                 }
             }
 
+			// 把接收到的包存进当前Flash页的镜像中，等待写入Flash
             U8ArryCopy(&(Flash_GetMirr()[Flash_GetPageOffset()]), xm.data_buf, xm.data_len);
             
             // 更新状态
@@ -179,19 +180,22 @@ static void Handle_WaitCrc2(uint8_t ch)
             
             OTA_SendByte(XM_ACK);     // ACK
         }
-        // 情况B: 发送端没收到ACK，重发了上一个包 (Duplicate Packet)
+        // 情况B: 发送端重发了上一个已写入的包
         else if (xm.blk == (uint8_t)(xm.expected_blk - 1))
         {
-            OTA_SendByte(XM_ACK);     // 直接ACK，但不写入Flash
+            OTA_SendByte(XM_ACK);
         }
         // 情况C: 包号完全对不上
         else
         {
+			OTA_DebugSend("[OTA][Error]:Packet Order Confusion\r\n");
             OTA_SendByte(XM_NAK);     // 取消传输或请求重发
+			return;
         }
     }
     // 2. CRC校验失败
     else {
+		OTA_DebugSend("[OTA][Error]:Crc16 Is Inconsistent\r\n");
         OTA_SendByte(XM_NAK);     // NAK
     }
 

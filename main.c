@@ -7,20 +7,33 @@
 
 void UART1_Init(void);
 void UART2_Init(void);
+void PB11_Input_Init();
 uint8_t OTA_DebugSend(const char *data);
 	
 int main(void)
 {
 	UART1_Init();
 	UART2_Init();
-	
-	OTA_DebugSend("START");
-	GPIO_SetBits(GPIOC, GPIO_Pin_13);   // PC13 = 0
-	
-	OTA_RunOTA();
+	PB11_Input_Init();
+	OTA_Run();
 	while(1)
 	{
 	};
+}
+
+void PB11_Input_Init(void) {
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    // 1. 使能 GPIOB 的时钟
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+
+    // 2. 配置引脚参数
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPD;   // 输入模式
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;    // 选择下拉
+    
+    // 3. 执行初始化
+    GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
 void UART1_Init(void)
@@ -77,23 +90,8 @@ void USART1_IRQHandler(void)
     if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
     {
 		uint8_t ch = (uint8_t)USART_ReceiveData(USART1);
-
-//		  while(!(USART2->SR & USART_SR_TXE));
-//        USART2->DR = '[';
-//        /* 高 4 位 */
-//        while(!(USART2->SR & USART_SR_TXE));
-//        USART2->DR = hex[ch >> 4];
-//        /* 低 4 位 */
-//        while(!(USART2->SR & USART_SR_TXE));
-//        USART2->DR = hex[ch & 0x0F];
-//        while(!(USART2->SR & USART_SR_TXE));
-//        USART2->DR = ']';
-//        while(!(USART2->SR & USART_SR_TXE));
-//        USART2->DR = '\r';
-//        while(!(USART2->SR & USART_SR_TXE));
-//        USART2->DR = '\n';
 		
-        OTA_ReceiveTask(ch);
+		OTA_ReceiveTask(ch);
     }
 }
 

@@ -1,48 +1,18 @@
 ;******************** (C) COPYRIGHT 2011 STMicroelectronics ********************
-;* File Name          : startup_stm32f10x_hd.s
-;* Author             : MCD Application Team
-;* Version            : V3.5.0
-;* Date               : 11-March-2011
-;* Description        : STM32F10x High Density Devices vector table for MDK-ARM 
-;*                      toolchain. 
-;*                      This module performs:
-;*                      - Set the initial SP
-;*                      - Set the initial PC == Reset_Handler
-;*                      - Set the vector table entries with the exceptions ISR address
-;*                      - Configure the clock system and also configure the external 
-;*                        SRAM mounted on STM3210E-EVAL board to be used as data 
-;*                        memory (optional, to be enabled by user)
-;*                      - Branches to __main in the C library (which eventually
-;*                        calls main()).
-;*                      After Reset the CortexM3 processor is in Thread mode,
-;*                      priority is Privileged, and the Stack is set to Main.
-;* <<< Use Configuration Wizard in Context Menu >>>   
-;*******************************************************************************
-; THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-; WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE TIME.
-; AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY DIRECT,
-; INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE
-; CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
-; INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+;* File Name          : startup_stm32f10x_md.s
+;* Author             : Edited for STM32F103C8T6 (Medium Density)
+;* Description        : STM32F103C8T6 (MD) vector table for MDK-ARM toolchain.
 ;*******************************************************************************
 
-; Amount of memory (in bytes) allocated for Stack
-; Tailor this value to your application needs
-; <h> Stack Configuration
-;   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
-; </h>
-
-Stack_Size      EQU     0x00000800
+; 栈大小保持 0xC00 (3KB)，对 OTA 应用比较稳健
+Stack_Size      EQU     0x00001000
 
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
 Stack_Mem       SPACE   Stack_Size
 __initial_sp
-                                                  
-; <h> Heap Configuration
-;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
-; </h>
 
-Heap_Size       EQU     0x00000800
+; 堆大小保持 0x400
+Heap_Size       EQU     0x00000400
 
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
 __heap_base
@@ -52,8 +22,7 @@ __heap_limit
                 PRESERVE8
                 THUMB
 
-
-; Vector Table Mapped to Address 0 at Reset
+; 向量表起始区域
                 AREA    RESET, DATA, READONLY
                 EXPORT  __Vectors
                 EXPORT  __Vectors_End
@@ -76,7 +45,7 @@ __Vectors       DCD     __initial_sp               ; Top of Stack
                 DCD     PendSV_Handler             ; PendSV Handler
                 DCD     SysTick_Handler            ; SysTick Handler
 
-                ; External Interrupts
+                ; 外部中断列表 (针对 C8T6 进行了精简)
                 DCD     WWDG_IRQHandler            ; Window Watchdog
                 DCD     PVD_IRQHandler             ; PVD through EXTI Line detect
                 DCD     TAMPER_IRQHandler          ; Tamper
@@ -120,30 +89,13 @@ __Vectors       DCD     __initial_sp               ; Top of Stack
                 DCD     EXTI15_10_IRQHandler       ; EXTI Line 15..10
                 DCD     RTCAlarm_IRQHandler        ; RTC Alarm through EXTI Line
                 DCD     USBWakeUp_IRQHandler       ; USB Wakeup from suspend
-                DCD     TIM8_BRK_IRQHandler        ; TIM8 Break
-                DCD     TIM8_UP_IRQHandler         ; TIM8 Update
-                DCD     TIM8_TRG_COM_IRQHandler    ; TIM8 Trigger and Commutation
-                DCD     TIM8_CC_IRQHandler         ; TIM8 Capture Compare
-                DCD     ADC3_IRQHandler            ; ADC3
-                DCD     FSMC_IRQHandler            ; FSMC
-                DCD     SDIO_IRQHandler            ; SDIO
-                DCD     TIM5_IRQHandler            ; TIM5
-                DCD     SPI3_IRQHandler            ; SPI3
-                DCD     UART4_IRQHandler           ; UART4
-                DCD     UART5_IRQHandler           ; UART5
-                DCD     TIM6_IRQHandler            ; TIM6
-                DCD     TIM7_IRQHandler            ; TIM7
-                DCD     DMA2_Channel1_IRQHandler   ; DMA2 Channel1
-                DCD     DMA2_Channel2_IRQHandler   ; DMA2 Channel2
-                DCD     DMA2_Channel3_IRQHandler   ; DMA2 Channel3
-                DCD     DMA2_Channel4_5_IRQHandler ; DMA2 Channel4 & Channel5
 __Vectors_End
 
 __Vectors_Size  EQU  __Vectors_End - __Vectors
 
                 AREA    |.text|, CODE, READONLY
-                
-; Reset handler
+
+; 复位处理程序
 Reset_Handler   PROC
                 EXPORT  Reset_Handler             [WEAK]
                 IMPORT  __main
@@ -153,30 +105,25 @@ Reset_Handler   PROC
                 LDR     R0, =__main
                 BX      R0
                 ENDP
-                
-; Dummy Exception Handlers (infinite loops which can be modified)
 
+; 异常处理占位符
 NMI_Handler     PROC
                 EXPORT  NMI_Handler                [WEAK]
                 B       .
                 ENDP
-HardFault_Handler\
-                PROC
+HardFault_Handler PROC
                 EXPORT  HardFault_Handler          [WEAK]
                 B       .
                 ENDP
-MemManage_Handler\
-                PROC
+MemManage_Handler PROC
                 EXPORT  MemManage_Handler          [WEAK]
                 B       .
                 ENDP
-BusFault_Handler\
-                PROC
+BusFault_Handler PROC
                 EXPORT  BusFault_Handler           [WEAK]
                 B       .
                 ENDP
-UsageFault_Handler\
-                PROC
+UsageFault_Handler PROC
                 EXPORT  UsageFault_Handler         [WEAK]
                 B       .
                 ENDP
@@ -184,8 +131,7 @@ SVC_Handler     PROC
                 EXPORT  SVC_Handler                [WEAK]
                 B       .
                 ENDP
-DebugMon_Handler\
-                PROC
+DebugMon_Handler PROC
                 EXPORT  DebugMon_Handler           [WEAK]
                 B       .
                 ENDP
@@ -199,7 +145,7 @@ SysTick_Handler PROC
                 ENDP
 
 Default_Handler PROC
-
+                ; 导出所有 MD 设备支持的外部中断
                 EXPORT  WWDG_IRQHandler            [WEAK]
                 EXPORT  PVD_IRQHandler             [WEAK]
                 EXPORT  TAMPER_IRQHandler          [WEAK]
@@ -240,26 +186,9 @@ Default_Handler PROC
                 EXPORT  USART1_IRQHandler          [WEAK]
                 EXPORT  USART2_IRQHandler          [WEAK]
                 EXPORT  USART3_IRQHandler          [WEAK]
-                EXPORT  EXTI15_10_IRQHandler       [WEAK]
+                EXPORT  EXTI15_10_IRQHandler       ; 注意此处移除了多余向量
                 EXPORT  RTCAlarm_IRQHandler        [WEAK]
                 EXPORT  USBWakeUp_IRQHandler       [WEAK]
-                EXPORT  TIM8_BRK_IRQHandler        [WEAK]
-                EXPORT  TIM8_UP_IRQHandler         [WEAK]
-                EXPORT  TIM8_TRG_COM_IRQHandler    [WEAK]
-                EXPORT  TIM8_CC_IRQHandler         [WEAK]
-                EXPORT  ADC3_IRQHandler            [WEAK]
-                EXPORT  FSMC_IRQHandler            [WEAK]
-                EXPORT  SDIO_IRQHandler            [WEAK]
-                EXPORT  TIM5_IRQHandler            [WEAK]
-                EXPORT  SPI3_IRQHandler            [WEAK]
-                EXPORT  UART4_IRQHandler           [WEAK]
-                EXPORT  UART5_IRQHandler           [WEAK]
-                EXPORT  TIM6_IRQHandler            [WEAK]
-                EXPORT  TIM7_IRQHandler            [WEAK]
-                EXPORT  DMA2_Channel1_IRQHandler   [WEAK]
-                EXPORT  DMA2_Channel2_IRQHandler   [WEAK]
-                EXPORT  DMA2_Channel3_IRQHandler   [WEAK]
-                EXPORT  DMA2_Channel4_5_IRQHandler [WEAK]
 
 WWDG_IRQHandler
 PVD_IRQHandler
@@ -304,55 +233,25 @@ USART3_IRQHandler
 EXTI15_10_IRQHandler
 RTCAlarm_IRQHandler
 USBWakeUp_IRQHandler
-TIM8_BRK_IRQHandler
-TIM8_UP_IRQHandler
-TIM8_TRG_COM_IRQHandler
-TIM8_CC_IRQHandler
-ADC3_IRQHandler
-FSMC_IRQHandler
-SDIO_IRQHandler
-TIM5_IRQHandler
-SPI3_IRQHandler
-UART4_IRQHandler
-UART5_IRQHandler
-TIM6_IRQHandler
-TIM7_IRQHandler
-DMA2_Channel1_IRQHandler
-DMA2_Channel2_IRQHandler
-DMA2_Channel3_IRQHandler
-DMA2_Channel4_5_IRQHandler
                 B       .
-
                 ENDP
 
                 ALIGN
 
-;*******************************************************************************
-; User Stack and Heap initialization
-;*******************************************************************************
-                 IF      :DEF:__MICROLIB
-                
-                 EXPORT  __initial_sp
-                 EXPORT  __heap_base
-                 EXPORT  __heap_limit
-                
-                 ELSE
-                
-                 IMPORT  __use_two_region_memory
-                 EXPORT  __user_initial_stackheap
-                 
+; 堆栈初始化逻辑
+                IF      :DEF:__MICROLIB
+                EXPORT  __initial_sp
+                EXPORT  __heap_base
+                EXPORT  __heap_limit
+                ELSE
+                IMPORT  __use_two_region_memory
+                EXPORT  __user_initial_stackheap
 __user_initial_stackheap
-
                  LDR     R0, =  Heap_Mem
                  LDR     R1, =(Stack_Mem + Stack_Size)
                  LDR     R2, = (Heap_Mem +  Heap_Size)
                  LDR     R3, = Stack_Mem
                  BX      LR
-
                  ALIGN
-
                  ENDIF
-
                  END
-
-;******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE*****

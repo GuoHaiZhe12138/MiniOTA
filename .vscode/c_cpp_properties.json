@@ -3,14 +3,14 @@
         {
             "name": "Target 1",
             "includePath": [
-                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\default\\Star",
-                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\default\\User",
-                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\default\\Library",
-                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\default\\MiniOTA\\ota_interface",
-                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\default\\MiniOTA\\ota_src",
+                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\MiniOta_BootLoader\\Star",
+                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\MiniOta_BootLoader\\User",
+                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\MiniOta_BootLoader\\Library",
+                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\MiniOta_BootLoader\\MiniOTA\\ota_interface",
+                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\MiniOta_BootLoader\\MiniOTA\\ota_src",
                 "C:\\Keil_v5\\ARM\\ARMCC\\include",
                 "C:\\Keil_v5\\ARM\\ARMCC\\include\\rw",
-                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\default"
+                "c:\\Users\\guo\\Desktop\\stm32_rpoject\\MiniOta_BootLoader"
             ],
             "defines": [
                 "USE_STDPERIPH_DRIVER",

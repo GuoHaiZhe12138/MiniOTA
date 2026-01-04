@@ -11,9 +11,11 @@ typedef struct {
 
 uint32_t Flash_GetCurAddr(void);
 uint16_t Flash_GetPageOffset(void);
-void Flash_SetPageOffset(uint16_t ch);
 uint8_t *Flash_GetMirr(void);
-void FlashHandle_Init(void);
+void Flash_SetCurAddr(uint32_t ch);
+void Flash_SetPageOffset(uint16_t ch);
+void Flash_SetMirr(const uint8_t *mirr, uint16_t length);
+void FlashHandle_Init(uint32_t addr);
 int Flash_Write(void);
 
 #endif

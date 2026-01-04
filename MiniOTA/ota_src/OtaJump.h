@@ -11,6 +11,6 @@
 
 typedef void (*pFunction)(void);
 
-void JumpToApp(void);
+void JumpToApp(uint32_t des_addr);
 	
 #endif

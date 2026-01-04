@@ -45,7 +45,7 @@ typedef struct {
 typedef void (*xm_state_fn_t)(uint8_t);
 
 /* ---------------- API ---------------- */
-void OTA_XmodemInit(void);
+void OTA_XmodemInit(uint32_t addr);
 void OTA_XmodemRevByte(uint8_t ch);
 uint8_t OTA_XmodemRevCompFlag(void);
 xmodem_t* OTA_GetXmodemHandle(void);

@@ -1,18 +1,23 @@
 /*******************************************************************************
-  * @file           : 
-  * @brief          : 
+  * @file           : OtaPort.h
+  * @brief          : User-side interface
   ******************************************************************************
   * @attention
-  *
-  *
+  * 用户需要在本文件内实现这些函数来支持MINIOTA的运行
+  * (Users need to implement these functions in this file to support the operation of MINIOTA.)
   *****************************************************************************/
 #ifndef OTAPORT_H
 #define OTAPORT_H
 
 #include <stdint.h>
 
+uint8_t OTA_ShouldEnterIap(void);
+	
 // 中断输入函数
 void OTA_ReceiveTask(uint8_t byte);
+
+// 外设逆初始化
+void OTA_PeripheralsDeInit(void);
 	
 // Flash页解锁
 uint8_t OTA_FlashUnlock(void);
