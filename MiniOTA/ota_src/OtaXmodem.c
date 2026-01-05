@@ -14,7 +14,8 @@
 
 static xmodem_t xm;
 
-static uint8_t RecComp_Flag = 0;
+static RecFlagState RecComp_Flag;
+static uint8_t RecFlag_cnt = 0;
 
 /* 状态处理函数声明 */
 static void Handle_WaitStart(uint8_t ch);
@@ -42,7 +43,7 @@ void OTA_XmodemInit(uint32_t addr)
     memset(&xm, 0, sizeof(xmodem_t));
     xm.state = XM_WAIT_START;
     xm.expected_blk = 1; // Xmodem协议通常从包号1开始
-    RecComp_Flag = 0;
+    RecComp_Flag = REC_FLAG_IDLE;
     
     FlashHandle_Init(addr);
 }
@@ -63,7 +64,7 @@ void OTA_XmodemRevByte(uint8_t ch)
 {
     if (xm.state < XM_STATE_MAX && xm_state_handlers[xm.state] != NULL)
     {
-        xm_state_handlers[xm.state](ch);
+		xm_state_handlers[xm.state](ch);
     }
     else
     {
@@ -80,14 +81,14 @@ static void Handle_WaitStart(uint8_t ch)
     if (ch == XM_SOH) {            // SOH 128字节包
         xm.data_len = 128;
         xm.state = XM_WAIT_BLK;
-		RecComp_Flag = 1;
+		RecComp_Flag = REC_FLAG_WORKING;
 		OTA_DebugSend("[OTA]:SOH MODE\r\n");
 		return;
     }
     else if (ch == XM_STX) {       // STX 1024字节包
         xm.data_len = 1024;
         xm.state = XM_WAIT_BLK;
-		RecComp_Flag = 1;
+		RecComp_Flag = REC_FLAG_WORKING;
 		OTA_DebugSend("[OTA]:STX MODE\r\n");
 		return;
     }
@@ -99,11 +100,19 @@ static void Handle_WaitStart(uint8_t ch)
         {
             Flash_Write();
         }
-        RecComp_Flag = 2;
+        RecComp_Flag = REC_FLAG_FINISH;
 		return;
-    }
+    }else if (ch == XM_CAN)
+	{
+		RecFlag_cnt ++;
+		if(RecFlag_cnt >= 2)
+		{
+			RecComp_Flag = REC_FLAG_INT;
+			RecFlag_cnt = 0;
+		}
+	}
 	OTA_DebugSend("[OTA][Error]:An Vnknown Character Was Read.\r\n");
-	RecComp_Flag = 0;
+	RecComp_Flag = REC_FLAG_IDLE;
 }
 
 // 等待包序号阶段

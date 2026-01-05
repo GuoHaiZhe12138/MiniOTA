@@ -13,12 +13,9 @@
 #include "OtaUtils.h"
 #include "OtaFlash.h"
 
-void OTA_RunIAP(uint32_t addr);
-void OTA_SelectIAP(void);
-
 // 验证 App Slot 的完整性
 // 返回 1 表示有效，0 表示无效
-int Verify_App_Slot(uint32_t slot_addr) {
+static int Verify_App_Slot(uint32_t slot_addr) {
 	
     AppImgHeader_t *header = (AppImgHeader_t*)slot_addr;
 
@@ -43,123 +40,125 @@ int Verify_App_Slot(uint32_t slot_addr) {
     return 1; // 验证通过
 }
 
-// ---------------- 核心初始化函数 ----------------
-
-void OTA_Run(void) {
-    OtaMeta_t meta;
-    uint32_t target_addr;
-    uint32_t backup_addr;
-
-    // 1. 读取 Meta 信息
-    meta = *(OtaMeta_t *)OTA_META_ADDR;
-
-    // 2. 检查 Meta 是否合法
-    if (meta.magic != OTA_MAGIC_NUM) {
-        // Meta 无效，默认初始化为 Slot A,并开始iap
-		meta.magic = OTA_MAGIC_NUM;
-		meta.seq_num = 1UL;
-        meta.active_slot = SLOT_A;
-        meta.state = OTA_STATE_UPDATING;
-		
-		// 保存meta分区状态
-		uint8_t flashMetaPage[OTA_FLASH_PAGE_SIZE];
-		OTA_MemSet(flashMetaPage, 0XFF, OTA_FLASH_PAGE_SIZE);
-		OTA_MemCopy(flashMetaPage, (uint8_t *)(&meta), OTA_FLASH_PAGE_SIZE);
-		Flash_SetCurAddr(OTA_META_ADDR);
-		Flash_SetMirr(flashMetaPage, OTA_FLASH_PAGE_SIZE);
-		Flash_Write();
-    }
-	
-	// 如果需要刷入固件
-	if(OTA_ShouldEnterIap())
-	{
-		OTA_DebugSend("[OTA]:Selecting IAP... \r\n");
-		OTA_SelectIAP();
-	}
-
-    // 3. 确定目标地址和备份地址
-    if (meta.active_slot == SLOT_A) {
-        target_addr = OTA_APP_A_ADDR;
-        backup_addr = OTA_APP_B_ADDR;
-    } else {
-        target_addr = OTA_APP_B_ADDR;
-        backup_addr = OTA_APP_A_ADDR;
-    }
-
-    // 4. 验证目标 App
-    if (Verify_App_Slot(target_addr)) {
-        // 目标有效，准备跳转
-        // 可以将状态改为 IDLE 并写回 Meta (Commit)
-        if (meta.state == OTA_STATE_UPDATING) {
-            meta.state = OTA_STATE_IDLE;
-            meta.seq_num++; 
-			
-			uint8_t flashMetaPage[OTA_FLASH_PAGE_SIZE];
-			OTA_MemSet(flashMetaPage, 0XFF, OTA_FLASH_PAGE_SIZE);
-			OTA_MemCopy(flashMetaPage, (uint8_t *)(&meta), OTA_FLASH_PAGE_SIZE);
-            Flash_SetCurAddr(OTA_META_ADDR);
-			Flash_SetMirr(flashMetaPage, OTA_FLASH_PAGE_SIZE);
-			Flash_Write();
-        }
-        
-        JumpToApp(target_addr + sizeof(AppImgHeader_t)); // 跳转到 Header 之后的向量表
-    } 
-    else {
-        // 5. 目标无效 (更新失败或固件损坏)，尝试回滚
-        if (Verify_App_Slot(backup_addr)) {
-            // 备份分区是好的，回滚
-            
-            // 更新 Meta 指向备份分区
-            meta.active_slot = (meta.active_slot == SLOT_A) ? SLOT_B : SLOT_A;
-            meta.state = OTA_STATE_ERROR; // 标记曾发生错误
-            
-			uint8_t flashMetaPage[OTA_FLASH_PAGE_SIZE];
-			OTA_MemSet(flashMetaPage, 0XFF, OTA_FLASH_PAGE_SIZE);
-			OTA_MemCopy(flashMetaPage, (uint8_t *)(&meta), OTA_FLASH_PAGE_SIZE);
-            Flash_SetCurAddr(OTA_META_ADDR);
-			Flash_SetMirr(flashMetaPage, OTA_FLASH_PAGE_SIZE);
-			Flash_Write();
-            
-            JumpToApp(backup_addr + sizeof(AppImgHeader_t));
-        }
-    }	
-    // 6. 如果走到这里，说明 Target 和 Backup 都无法启动
-    // 死循环接收新的固件
-	meta.active_slot == SLOT_A? OTA_RunIAP(OTA_APP_A_ADDR) : OTA_RunIAP(OTA_APP_B_ADDR);
+// 封装：保存 Meta 信息到 Flash
+static void OTA_SaveMeta(OtaMeta_t *pMeta) {
+    uint8_t flashPage[OTA_FLASH_PAGE_SIZE];
+    OTA_MemSet(flashPage, 0xFF, OTA_FLASH_PAGE_SIZE);
+    OTA_MemCopy(flashPage, (uint8_t *)pMeta, sizeof(OtaMeta_t));
+    Flash_SetCurAddr(OTA_META_ADDR);
+    Flash_SetMirr(flashPage, OTA_FLASH_PAGE_SIZE);
+    Flash_Write();
 }
-	
-void OTA_SelectIAP(void)
+
+static void OTA_UpdateMeta(OtaMeta_t *pMeta)
 {
-	// 读取meta区信息
-	OtaMeta_t meta = *(OtaMeta_t *)OTA_META_ADDR;
-	// Meta 无效，默认初始化为 Slot A,并开始iap
-	if (meta.magic != OTA_MAGIC_NUM) {
-        OTA_DebugSend("[OTA][Error]:The META is corrupted. Please call the OTA_Run() function to restore the META\r\n");
-    }
+	uint8_t isSlotAValid = Verify_App_Slot(OTA_APP_A_ADDR);
+	uint8_t isSlotBValid = Verify_App_Slot(OTA_APP_B_ADDR);
 	
-	OTA_DebugSend("[OTA][Prompt]:Please Set App IOM to  ");
-	if(Verify_App_Slot(OTA_APP_A_ADDR))
+	/* state = unconfirmed */
+	if(pMeta->slotAStatus == SLOT_STATE_UNCONFIRMED)
 	{
-		OTA_PrintHex32(OTA_APP_B_ADDR + sizeof(AppImgHeader_t));
-		OTA_DebugSend("  \r\n");
-		OTA_RunIAP(OTA_APP_B_ADDR);
+		if(isSlotAValid)
+		{
+			pMeta->slotAStatus = SLOT_STATE_VALID;
+		}
+		else
+		{
+			pMeta->slotAStatus = SLOT_STATE_INVALID;
+		}
 	}
-	else
+	
+	if(pMeta->slotBStatus == SLOT_STATE_UNCONFIRMED)
 	{
-		OTA_PrintHex32(OTA_APP_A_ADDR + sizeof(AppImgHeader_t));
-		OTA_DebugSend("  \r\n");
-		OTA_RunIAP(OTA_APP_A_ADDR);
+		if(isSlotBValid)
+		{
+			pMeta->slotBStatus = SLOT_STATE_VALID;
+		}
+		else
+		{
+			pMeta->slotBStatus = SLOT_STATE_INVALID;
+		}
 	}
+	
+	OTA_SaveMeta(pMeta);
 }
 
-void OTA_RunIAP(uint32_t addr)
+static uint32_t OTA_GetJumpTar(OtaMeta_t *pMeta)
+{
+	
+	if(pMeta->active_slot == SLOT_A)
+	{
+		if((pMeta->slotAStatus == SLOT_STATE_UNCONFIRMED || pMeta->slotAStatus == SLOT_STATE_VALID))
+		{
+			if(Verify_App_Slot(OTA_APP_A_ADDR))
+			{
+				return OTA_APP_A_ADDR;
+			}
+			else if(pMeta->slotBStatus == SLOT_STATE_VALID)
+			{
+				return OTA_APP_B_ADDR;
+			}
+		}
+	}
+	
+	if(pMeta->active_slot == SLOT_B)
+	{
+		if((pMeta->slotBStatus == SLOT_STATE_UNCONFIRMED || pMeta->slotBStatus == SLOT_STATE_VALID))
+		{
+			if(Verify_App_Slot(OTA_APP_B_ADDR))
+			{
+				return OTA_APP_B_ADDR;
+			}
+			else if(pMeta->slotAStatus == SLOT_STATE_VALID)
+			{
+				return OTA_APP_A_ADDR;
+			}
+		}
+	}
+	
+	// 无可用固件
+	return U32_INVALID;
+}
+
+static uint8_t OTA_IsUserSetingsValid(void)
+{
+    uint32_t flash_end = OTA_FLASH_START_ADDRESS + OTA_FLASH_SIZE - 1;
+    uint32_t app_max_size = OTA_APP_MAX_SIZE;
+
+    /* 分配给MiniOTA的flash空间必须位于 Flash 内 */
+    if (OTA_TOTAL_START_ADDRESS < OTA_FLASH_START_ADDRESS ||
+        OTA_TOTAL_START_ADDRESS > flash_end)
+    {
+		OTA_DebugSend("[OTA][Error]:In OtaInterface - The flash space allocated to MiniOTA must be located within the Flash memory..\r\n");
+        return OTA_ERR_FLASH_RANGE;
+    }
+
+    /* MiniOTA起始地址必须按 Flash 页对齐 */
+    if ((OTA_TOTAL_START_ADDRESS % OTA_FLASH_PAGE_SIZE) != 0)
+    {
+		OTA_DebugSend("[OTA][Error]:In OtaInterface - MiniOTA's starting address must be aligned to the Flash page.\r\n");
+        return OTA_ERR_ALIGN;
+    }
+
+    /* MiniOTA用友的flash空间必须大于一个 Flash 页 */
+    if (app_max_size < OTA_FLASH_PAGE_SIZE)
+    {
+		OTA_DebugSend("[OTA][Error]:In OtaInterface - MiniOTA and Yonyou's flash storage space must be larger than one Flash page.\r\n");
+        return OTA_ERR_SIZE;
+    }
+
+    return OTA_OK;
+}
+
+static void OTA_RunIAP(uint32_t
+ 	addr)
 {
 	OTA_DebugSend("[OTA]:IAPing...\r\n");
 	OTA_XmodemInit(addr);
 	while(1)
 	{
 		/* 周期为1s得检查传输是否未开始 */
-		if(OTA_GetXmodemHandle()->state == XM_WAIT_START && OTA_XmodemRevCompFlag() == 0)
+		if(OTA_GetXmodemHandle()->state == XM_WAIT_START && OTA_XmodemRevCompFlag() == REC_FLAG_IDLE)
 		{
 			OTA_SendByte(0x43);
 			//OTA_DebugSend("[OTA]Send C\r\n");
@@ -171,37 +170,90 @@ void OTA_RunIAP(uint32_t addr)
 			}
 		}
 		
-		if(OTA_XmodemRevCompFlag() == 2)
+		if(OTA_XmodemRevCompFlag() == REC_FLAG_FINISH)
 		{
 			JumpToApp(addr + sizeof(AppImgHeader_t));
+		}
+		else if(OTA_XmodemRevCompFlag() == REC_FLAG_INT)
+		{
+			return;
 		}
 	}
 }
 
+// ---------------- 核心初始化函数 ----------------
 
-uint8_t OTA_IsUserSetingsValid(void)
-{
-    uint32_t flash_end = OTA_FLASH_START_ADDRESS + OTA_FLASH_SIZE - 1;
-    uint32_t app_max_size = OTA_APP_MAX_SIZE;
-
-    /* 1. App 区间必须完全位于 Flash 内 */
-    if (OTA_TOTAL_START_ADDRESS < OTA_FLASH_START_ADDRESS ||
-        OTA_TOTAL_START_ADDRESS > flash_end)
-    {
-        return OTA_ERR_FLASH_RANGE;
-    }
-
-    /* 2. App 起始地址必须按 Flash 页对齐 */
-    if ((OTA_TOTAL_START_ADDRESS % OTA_FLASH_PAGE_SIZE) != 0)
-    {
-        return OTA_ERR_ALIGN;
-    }
-
-    /* 3. App 区域最大空间必须 >= 一个 Flash 页 */
-    if (app_max_size < OTA_FLASH_PAGE_SIZE)
-    {
-        return OTA_ERR_SIZE;
-    }
-
-    return OTA_OK;
+void OTA_Run(void) {
+    OtaMeta_t meta;
+    uint32_t target_addr;
+	
+	while(1)
+	{
+		// 检查用户参数设置合理性
+		if(OTA_IsUserSetingsValid() != OTA_OK)
+		{
+			return;
+		}
+	
+		// 读取 Meta 信息
+		meta = *(OtaMeta_t *)OTA_META_ADDR;
+	
+		// 检查 Meta 是否合法
+		if (meta.magic != OTA_MAGIC_NUM) {
+			/* Meta 无效：
+				忽略OTA_ShouldEnterIap接口
+				将Slot_A作为目标slot，进行IAP
+			*/
+			meta.magic = OTA_MAGIC_NUM;
+			meta.seq_num = 0UL;
+			meta.active_slot = SLOT_A;
+			meta.slotAStatus = SLOT_STATE_EMPTY;
+			meta.slotBStatus = SLOT_STATE_EMPTY;
+			
+			// 保存meta分区状态
+			OTA_SaveMeta(&meta);
+		}
+		
+		// 根据固件头更新meta信息
+		OTA_UpdateMeta(&meta);
+		
+		// 如果用户需要刷入新的固件
+		if(OTA_ShouldEnterIap())
+		{
+			// 发送IOM信息
+			uint32_t tarAddr = (meta.active_slot == SLOT_A) ? OTA_APP_B_ADDR : OTA_APP_A_ADDR;
+			OTA_DebugSend("[OTA]:Selecting IAP... \r\n");
+			OTA_DebugSend("[OTA]:Please set the IOM address to : \r\n");
+			OTA_PrintHex32(tarAddr + sizeof(AppImgHeader_t));
+			OTA_DebugSend("\r\n");
+			
+			meta.active_slot = (meta.active_slot == SLOT_A) ? SLOT_B : SLOT_A;
+			meta.state = (meta.active_slot == SLOT_A) ? OTA_STATE_UPDATING_B : OTA_STATE_UPDATING_A;
+			OTA_SaveMeta(&meta);
+			OTA_RunIAP(tarAddr);
+		}
+		
+		// 确定跳转目标地址
+		target_addr = OTA_GetJumpTar(&meta);
+		if(target_addr != U32_INVALID)
+		{
+			// 跳转到目标地址
+			JumpToApp(target_addr + sizeof(AppImgHeader_t));
+		}
+	
+		// 无可用固件，尝试接收新固件
+		meta.active_slot = SLOT_A;
+		meta.state = OTA_STATE_UPDATING_A;
+		// 发送IOM信息
+		OTA_DebugSend("[OTA]:Please set the IOM address to : \r\n");
+		OTA_PrintHex32(OTA_APP_A_ADDR + sizeof(AppImgHeader_t));
+		OTA_DebugSend("\r\n");
+		
+		OTA_SaveMeta(&meta);
+		
+		OTA_RunIAP(OTA_APP_A_ADDR);
+	}
 }
+	
+
+

@@ -1,0 +1,29 @@
+SET PATH=C:\Keil_v5\ARM\ARMCC\Bin;D:\vmwear\bin\;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;D:\CMake\bin;C:\Users\guo\AppData\Local\Programs\Python\Python310;C:\Users\guo\.platformio\penv\Scripts;C:\Program Files\Pandoc\;C:\Program Files (x86)\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility;C:\Program Files\usbipd-win\;C:\Users\guo\AppData\Local\Programs\Python\Launcher\;C:\Users\guo\AppData\Local\Microsoft\WindowsApps;D:\idea\IntelliJ IDEA Community Edition 2025.1.1\bin;;C:\Users\guo\AppData\Local\Programs\Microsoft VS Code\bin;D:\pycharm\PyCharm Community Edition 2025.1.1\bin;;D:\FlutterSDK\dev\flutter\bin;D:\idea\IntelliJ IDEA 2024.1.4\bin;;C:\Users\guo\AppData\Local\GitHubDesktop\bin;D:\DEVecho_studio\DevEco Studio\bin;;C:\Program Files\MySQL\MySQL Server 8.4\bin;C:\Users\guo\AppData\Local\Programs\Python\Python310;C:\Users\guo\AppData\Local\Programs\Python\Python310\Scripts;C:\Users\guo\.platformio\penv\Scripts;C:\Program Files (x86)\GnuWin32\bin;C:\Program Files (x86)\Arm GNU Toolchain arm-none-eabi\14.3 rel1\bin;
+SET CPU_TYPE=STM32F103C8
+SET CPU_VENDOR=STMicroelectronics
+SET UV2_TARGET=Target 1
+SET CPU_CLOCK=0x007A1200
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmAsm" --Via ".\objects\startup_stm32f10x_hd._ia"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\system_stm32f10x.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\core_cm3.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\main.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\stm32f10x_it.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\delay.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\misc.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\stm32f10x_bkp.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\stm32f10x_dbgmcu.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\stm32f10x_exti.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\stm32f10x_flash.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\stm32f10x_fsmc.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\stm32f10x_gpio.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\stm32f10x_rcc.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\stm32f10x_tim.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\stm32f10x_usart.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\otacore.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\otaport.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\otajump.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\otautils.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\otaflash.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmCC" --Via ".\objects\otaxmodem.__i"
+"C:\Keil_v5\ARM\ARMCC\Bin\ArmLink" --Via ".\Objects\MiniOta.lnp"
+"C:\Keil_v5\ARM\ARMCC\Bin\fromelf.exe" ".\Objects\MiniOta.axf" --i32combined --output ".\Objects\MiniOta.hex"

@@ -7,7 +7,7 @@
 
 void UART1_Init(void);
 void UART2_Init(void);
-void PB11_Input_Init();
+void PB11_Input_Init(void);
 uint8_t OTA_DebugSend(const char *data);
 	
 int main(void)

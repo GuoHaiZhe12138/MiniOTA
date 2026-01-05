@@ -15,6 +15,7 @@
 #define XM_EOT   0x04
 #define XM_ACK   0x06
 #define XM_NAK   0x15
+#define XM_CAN   0X18
 
 /* ---------------- ×´Ì¬¶¨Òå ---------------- */
 typedef enum {
@@ -27,7 +28,12 @@ typedef enum {
     XM_STATE_MAX
 } xm_state_t;
 
-
+typedef enum {
+	REC_FLAG_IDLE = 0,
+	REC_FLAG_WORKING,
+	REC_FLAG_FINISH,
+	REC_FLAG_INT
+} RecFlagState;
 /* ---------------- Xmodem Handle ---------------- */
 typedef struct {
     xm_state_t state;

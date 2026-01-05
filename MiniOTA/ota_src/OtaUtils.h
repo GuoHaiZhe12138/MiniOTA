@@ -5,15 +5,15 @@
 // ---------------- 配置区域 ----------------
 #define OTA_MAGIC_NUM       0x5A5A0001  // 用于识别 Meta 数据有效性
 #define APP_MAGIC_NUM       0x424C4150  // "BLAP" - BootLoader APp
+#define U32_INVALID			0UL			// 32bit 无效值
 
-// 用户设置参数合理性检查结果定义
-typedef enum
-{
-    OTA_OK = 0,               /* 参数合法 */
-    OTA_ERR_FLASH_RANGE,      /* App 区间超出 Flash 范围 */
-    OTA_ERR_ALIGN,            /* App 起始地址未对齐 Flash 页 */
-    OTA_ERR_SIZE,             /* App 区域大小不合法 */
-} OTA_Status_t;
+// app slot状态枚举
+typedef enum {
+    SLOT_STATE_EMPTY = 0xFF,    // 初始状态/已擦除
+    SLOT_STATE_UNCONFIRMED = 0, // 刚刷完，还没成功启动过
+    SLOT_STATE_VALID = 1,       // 已经成功启动过，是安全的备份
+    SLOT_STATE_INVALID = 2      // 校验失败或启动过程中飞了
+} SlotState_e;
 
 /* Flash内APP代码检查结果枚举 */
 typedef enum
@@ -23,12 +23,14 @@ typedef enum
     APP_CHECK_PC_INVALID     /* 复位向量非法（非 Thumb 地址） */
 } AppCheckResult_t;
 
-// OTA 状态枚举
-typedef enum {
-    OTA_STATE_IDLE = 0,     // 正常状态
-    OTA_STATE_UPDATING,     // 正在更新
-    OTA_STATE_ERROR         // 发生错误
-} OtaState_e;
+// 用户设置参数合理性检查结果定义
+typedef enum
+{
+    OTA_OK = 0,               /* 参数合法 */
+    OTA_ERR_FLASH_RANGE,      /* App 区间超出 Flash 范围 */
+    OTA_ERR_ALIGN,            /* App 起始地址未对齐 Flash 页 */
+    OTA_ERR_SIZE,             /* App 区域大小不合法 */
+} OTA_Status_t;
 
 // 目标插槽枚举
 typedef enum {
@@ -54,8 +56,9 @@ typedef struct {
     uint32_t     magic;       // Meta 数据有效性魔数
     uint32_t     seq_num;     // 序列号 (每次更新+1，用于简单的寿命均衡或版本追踪)
     ActiveSlot_e active_slot; // 当前应启动的插槽 (A 或 B)
-    OtaState_e   state;       // 当前 OTA 状态
-	uint8_t  reserved[7];     // 保证结构体32byte对齐
+    SlotState_e  slotAStatus; // slotA状态
+	SlotState_e  slotBStatus; // slotB状态
+	uint8_t  reserved[5];     // 保证结构体16byte对齐
 } OtaMeta_t;
 
 // App函数指针定义
