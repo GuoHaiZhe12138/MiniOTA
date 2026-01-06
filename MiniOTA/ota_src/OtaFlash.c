@@ -1,62 +1,107 @@
+/**
+ ******************************************************************************
+ * @file    OtaFlash.c
+ * @author  MiniOTA Team
+ * @brief   Flash 驱动层抽象
+ *          提供 Flash 页缓冲管理、读写校验及地址映射功能
+ ******************************************************************************
+ * @attention
+ * 
+ * Copyright (c) 2026 MiniOTA.
+ * All rights reserved.
+ *
+ ******************************************************************************
+ */
 
 #include "OtaInterface.h"
 #include "OtaFlash.h"
 #include "OtaPort.h"
 #include "OtaUtils.h"
 
+/** Flash 句柄，全局唯一 */
 static flashHandle_t flash = {0};
 
+/**
+ * @brief  获取当前 Flash 操作地址
+ * @return 当前地址
+ */
 uint32_t Flash_GetCurAddr(void)
 {
 	return flash.curr_addr;
 }
 
+/**
+ * @brief  设置当前 Flash 操作地址
+ * @param  ch: 目标地址
+ */
 void Flash_SetCurAddr(uint32_t ch)
 {
 	flash.curr_addr = ch;
 }
 
-
+/**
+ * @brief  获取当前页内偏移
+ * @return 页内偏移
+ */
 uint16_t Flash_GetPageOffset(void)
 {
 	return flash.page_offset;
 }
 
+/**
+ * @brief  设置当前页内偏移
+ * @param  ch: 目标偏移
+ */
 void Flash_SetPageOffset(uint16_t ch)
 {
 	flash.page_offset = ch;
 }
 
+/**
+ * @brief  获取页缓冲区的指针
+ * @return 页缓冲区指针
+ */
 uint8_t *Flash_GetMirr(void)
 {
 	return flash.page_buf;
 }
 
+/**
+ * @brief  将数据复制到页缓冲区
+ * @param  mirr: 源数据指针
+ * @param  length: 复制长度
+ */
 void Flash_SetMirr(const uint8_t *mirr, uint16_t length)
 {
 	OTA_MemCopy(flash.page_buf, mirr, length);
 }
 
-// FlashHandle��ʼ��
+/**
+ * @brief  初始化 Flash 句柄，并预读当前页内容
+ * @param  addr: 起始地址
+ */
 void FlashHandle_Init(uint32_t addr)
 {
     flash.curr_addr   = addr;
     flash.page_offset = 0;
-    // Ԥ��ȡ��ǰҳ���ݣ��Ա���� Read-Modify-Write ����
+    // 预读取当前页内容，以便进行 Read-Modify-Write 操作
     OTA_DrvRead(addr, flash.page_buf, OTA_FLASH_PAGE_SIZE);
 }
 
-// Flashд����ҳ����
+/**
+ * @brief  将页缓冲区写入 Flash，包含擦除、编程、校验全流程
+ * @return 0: 成功, 1: 失败
+ */
 int Flash_Write(void)
 {
-    /* �� Flash�������� */
+    /* 打开 Flash（解锁） */
     if (OTA_FlashUnlock() != 0)
 	{
 		OTA_DebugSend("[OTA][Error]:Flash UnLock Faild\r\n");
 		return 1;
 	}
 
-    /* ����ǰҳ */
+    /* 擦当前页 */
     if (OTA_ErasePage(flash.curr_addr) != 0)
     {
 		OTA_DebugSend("[OTA][Error]:Flash Erase Faild\r\n");
@@ -67,7 +112,7 @@ int Flash_Write(void)
         return 1;
     }
 
-    /* д��ҳ */
+    /* 写整页（按半字编程） */
     for (int i = 0; i < OTA_FLASH_PAGE_SIZE; i += 2)
     {
         uint16_t hw = flash.page_buf[i] | (flash.page_buf[i + 1] << 8);
@@ -81,14 +126,14 @@ int Flash_Write(void)
         }
     }
 
-	/* д�����У�飨���ֽڶԱȣ� */
+	/* 写后读回校验（逐字节对比） */
     for (int i = 0; i < OTA_FLASH_PAGE_SIZE; i++)
     {
         uint8_t flash_byte = *(volatile uint8_t *)(flash.curr_addr + i);
 
         if (flash_byte != flash.page_buf[i])
         {
-            /* Flash �е���������յ��ľ���һ�� */
+            /* Flash 中的内容与接收到的镜像不一致 */
 			OTA_DebugSend("[OTA][Error]:Flash Verify Error ,Data Mismatch\r\n");
             return 1;
         }
@@ -97,7 +142,7 @@ int Flash_Write(void)
 	
     OTA_FlashLock();
     
-    // ���¾�������
+    // 更新镜像内容
     flash.page_offset = 0;
     flash.curr_addr += OTA_FLASH_PAGE_SIZE;
     return 0;

@@ -1,7 +1,18 @@
-/*******************************************************************************
-  * @file           : OtaTrans.c
-  * @brief          : Xmodem Table-Driven Refactored
-  ******************************************************************************/
+/**
+ ******************************************************************************
+ * @file    OtaXmodem.c
+ * @author  MiniOTA Team
+ * @brief   Xmodem 协议传输实现
+ *          基于状态机的表驱动设计，支持 128/1024 字节包及 CRC 校验
+ ******************************************************************************
+ * @attention
+ * 
+ * Copyright (c) 2026 MiniOTA.
+ * All rights reserved.
+ *
+ ******************************************************************************
+ */
+
 #include "OtaXmodem.h"
 #include "OtaInterface.h"
 #include "OtaPort.h"
@@ -12,10 +23,11 @@
 #include "stm32f10x.h"
 #include "stdio.h"
 
+/** Xmodem 协议句柄 */
 static xmodem_t xm;
 
+/** 接收完成标志 */
 static RecFlagState RecComp_Flag;
-static uint8_t RecFlag_cnt = 0;
 
 /* 状态处理函数声明 */
 static void Handle_WaitStart(uint8_t ch);
@@ -25,7 +37,7 @@ static void Handle_WaitData(uint8_t ch);
 static void Handle_WaitCrc1(uint8_t ch);
 static void Handle_WaitCrc2(uint8_t ch);
 
-// 表驱动结构：状态处理函数数组
+/** 状态处理函数表（表驱动设计） */
 static const xm_state_fn_t xm_state_handlers[XM_STATE_MAX] = {
     [XM_WAIT_START]   = Handle_WaitStart,
     [XM_WAIT_BLK]     = Handle_WaitBlk,
@@ -37,7 +49,10 @@ static const xm_state_fn_t xm_state_handlers[XM_STATE_MAX] = {
 
 /* ---------------- API 实现 ---------------- */
 
-// Xmodem 初始化
+/**
+ * @brief  Xmodem 协议初始化
+ * @param  addr: Flash 写入起始地址
+ */
 void OTA_XmodemInit(uint32_t addr)
 {
     memset(&xm, 0, sizeof(xmodem_t));
@@ -48,18 +63,28 @@ void OTA_XmodemInit(uint32_t addr)
     FlashHandle_Init(addr);
 }
 
-// 获取xmodemHandle
+/**
+ * @brief  获取 Xmodem 句柄指针
+ * @return Xmodem 句柄指针
+ */
 xmodem_t* OTA_GetXmodemHandle(void)
 {
     return &xm;
 }
 
+/**
+ * @brief  获取接收完成标志
+ * @return 接收标志（空闲/工作中/完成/中断）
+ */
 uint8_t OTA_XmodemRevCompFlag(void)
 {
     return RecComp_Flag;
 }
 
-// 主接收函数
+/**
+ * @brief  Xmodem 字节接收处理主函数
+ * @param  ch: 接收到的字节
+ */
 void OTA_XmodemRevByte(uint8_t ch)
 {
     if (xm.state < XM_STATE_MAX && xm_state_handlers[xm.state] != NULL)
@@ -75,7 +100,10 @@ void OTA_XmodemRevByte(uint8_t ch)
 
 /* ---------------- 状态处理函数实现 ---------------- */
 
-// 等待控制符阶段
+/**
+ * @brief  等待控制符阶段处理
+ * @param  ch: 接收到的控制字符
+ */
 static void Handle_WaitStart(uint8_t ch)
 {
     if (ch == XM_SOH) {            // SOH 128字节包
@@ -104,18 +132,19 @@ static void Handle_WaitStart(uint8_t ch)
 		return;
     }else if (ch == XM_CAN)
 	{
-		RecFlag_cnt ++;
-		if(RecFlag_cnt >= 2)
-		{
-			RecComp_Flag = REC_FLAG_INT;
-			RecFlag_cnt = 0;
-		}
+		RecComp_Flag = REC_FLAG_INT;
+		xm.state = XM_WAIT_START;
+		OTA_DebugSend("[OTA][Error]:Transmission interrupted.\r\n");
+		return;
 	}
 	OTA_DebugSend("[OTA][Error]:An Vnknown Character Was Read.\r\n");
 	RecComp_Flag = REC_FLAG_IDLE;
 }
 
-// 等待包序号阶段
+/**
+ * @brief  等待包序号阶段处理
+ * @param  ch: 接收到的包序号
+ */
 static void Handle_WaitBlk(uint8_t ch)
 {
     xm.blk = ch;
@@ -123,7 +152,10 @@ static void Handle_WaitBlk(uint8_t ch)
 	OTA_DebugSend("[OTA]:GET PACK NUM\r\n");
 }
 
-// 等待包序号反码阶段
+/**
+ * @brief  等待包序号反码阶段处理
+ * @param  ch: 接收到的包序号反码
+ */
 static void Handle_WaitBlkInv(uint8_t ch)
 {
     xm.blk_inv = ch;
@@ -138,7 +170,10 @@ static void Handle_WaitBlkInv(uint8_t ch)
     }
 }
 
-// 等待包数据阶段
+/**
+ * @brief  等待包数据阶段处理
+ * @param  ch: 接收到的数据字节
+ */
 static void Handle_WaitData(uint8_t ch)
 {	
     xm.data_buf[xm.data_cnt++] = ch;
@@ -148,7 +183,10 @@ static void Handle_WaitData(uint8_t ch)
     }
 }
 
-// 等待前八位crc阶段
+/**
+ * @brief  等待 CRC 高字节阶段处理
+ * @param  ch: 接收到的 CRC 高字节
+ */
 static void Handle_WaitCrc1(uint8_t ch)
 {
 	OTA_DebugSend("[OTA]:Get Crc1\r\n");
@@ -156,7 +194,10 @@ static void Handle_WaitCrc1(uint8_t ch)
     xm.state = XM_WAIT_CRC2;
 }
 
-// 等待后八位crc阶段
+/**
+ * @brief  等待 CRC 低字节阶段处理
+ * @param  ch: 接收到的 CRC 低字节
+ */
 static void Handle_WaitCrc2(uint8_t ch)
 {
 	OTA_DebugSend("[OTA]:Get Crc2\r\n");
@@ -210,4 +251,3 @@ static void Handle_WaitCrc2(uint8_t ch)
 
     xm.state = XM_WAIT_START; // 回到开始等待下一个包头
 }
-

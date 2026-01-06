@@ -581,6 +581,11 @@
               <FilePath>.\MiniOTA\ota_interface\OtaPort.h</FilePath>
             </File>
             <File>
+              <FileName>OtaXmodem.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\MiniOTA\ota_src\OtaXmodem.h</FilePath>
+            </File>
+            <File>
               <FileName>OtaCore.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\MiniOTA\ota_src\OtaCore.c</FilePath>
@@ -609,11 +614,6 @@
               <FileName>OtaXmodem.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\MiniOTA\ota_src\OtaXmodem.c</FilePath>
-            </File>
-            <File>
-              <FileName>OtaXmodem.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\MiniOTA\ota_src\OtaXmodem.h</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,0 +1,31 @@
+# Keil build output
+Objects/
+Listings/
+
+# Keil project user settings
+*.uvoptx
+*.uvopt
+
+# Keil debug
+*.bak
+*.dep
+*.crf
+*.lnp
+*.htm
+*.build_log.htm
+JLinkLog.txt
+JLinkSettings.ini
+
+# Output files
+*.axf
+*.elf
+*.hex
+*.bin
+*.map
+
+# OS / IDE
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db

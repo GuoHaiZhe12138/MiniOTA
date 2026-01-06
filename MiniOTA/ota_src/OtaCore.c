@@ -1,11 +1,17 @@
-/*******************************************************************************
-  * @file           : 
-  * @brief          : 
-  ******************************************************************************
-  * @attention
-  *
-  *
-  *****************************************************************************/
+/**
+ ******************************************************************************
+ * @file    OtaCore.c
+ * @author  MiniOTA Team
+ * @brief   MiniOTA æ ¸å¿ƒé€»è¾‘å®ç°
+ *          åŒ…å« OTA çŠ¶æ€æœºã€åˆ†åŒºéªŒè¯ã€IAP æµç¨‹æ§åˆ¶åŠå›ºä»¶è·³è½¬
+ ******************************************************************************
+ * @attention
+ * 
+ * Copyright (c) 2026 MiniOTA.
+ * All rights reserved.
+ *
+ ******************************************************************************
+ */
 #include "OtaInterface.h"
 #include "OtaXmodem.h"
 #include "OtaPort.h"
@@ -13,34 +19,40 @@
 #include "OtaUtils.h"
 #include "OtaFlash.h"
 
-// ÑéÖ¤ App Slot µÄÍêÕûĞÔ
-// ·µ»Ø 1 ±íÊ¾ÓĞĞ§£¬0 ±íÊ¾ÎŞĞ§
+/**
+ * @brief  éªŒè¯ App åˆ†åŒºçš„å®Œæ•´æ€§å’Œæœ‰æ•ˆæ€§
+ * @param  slot_addr: åˆ†åŒºèµ·å§‹åœ°å€
+ * @return 1: åˆ†åŒºæœ‰æ•ˆ, 0: åˆ†åŒºæ— æ•ˆ
+ */
 static int Verify_App_Slot(uint32_t slot_addr) {
 	
     AppImgHeader_t *header = (AppImgHeader_t*)slot_addr;
 
-    // 1. ¼ì²éÄ§Êı
+    // 1. æ£€æŸ¥é­”æ•°
     if (header->magic != APP_MAGIC_NUM) {
-        return 0; // Í·²¿ÎŞĞ§
+        return 0; // å¤´éƒ¨æ— æ•ˆ
     }
 
-    // 2. ¼òµ¥µÄ·¶Î§¼ì²é
+    // 2. ç®€å•çš„èŒƒå›´æ£€æŸ¥
     if (header->img_size == 0 || header->img_size > OTA_APP_SLOT_SIZE) {
-        return 0; // ´óĞ¡Òì³£
+        return 0; // å¤§å°å¼‚å¸¸
     }
 
-    // 3. ¼ÆËã¹Ì¼şÌåµÄ CRC (×¢Òâ£º¹Ì¼şÌå½ô¸úÔÚ Header ºóÃæ)
+    // 3. è®¡ç®—å›ºä»¶ä½“çš„ CRC (æ³¨æ„ï¼šå›ºä»¶ä½“ç´§è·Ÿåœ¨ Header åé¢)
     const uint8_t *bin_start = (const uint8_t *)(slot_addr + sizeof(AppImgHeader_t));
     uint16_t cal_crc = XmodemCrc16(bin_start, header->img_size);
 
     if (cal_crc != header->img_crc16) {
-        return 0; // CRC Ğ£ÑéÊ§°Ü
+        return 0; // CRC æ ¡éªŒå¤±è´¥
     }
 
-    return 1; // ÑéÖ¤Í¨¹ı
+    return 1; // éªŒè¯é€šè¿‡
 }
 
-// ·â×°£º±£´æ Meta ĞÅÏ¢µ½ Flash
+/**
+ * @brief  å°† Meta ä¿¡æ¯ä¿å­˜åˆ° Flash çŠ¶æ€åŒº
+ * @param  pMeta: æŒ‡å‘ Meta ç»“æ„ä½“çš„æŒ‡é’ˆ
+ */
 static void OTA_SaveMeta(OtaMeta_t *pMeta) {
     uint8_t flashPage[OTA_FLASH_PAGE_SIZE];
     OTA_MemSet(flashPage, 0xFF, OTA_FLASH_PAGE_SIZE);
@@ -116,16 +128,20 @@ static uint32_t OTA_GetJumpTar(OtaMeta_t *pMeta)
 		}
 	}
 	
-	// ÎŞ¿ÉÓÃ¹Ì¼ş
+	// æ— å¯ç”¨å›ºä»¶
 	return U32_INVALID;
 }
 
+/**
+ * @brief  æ£€æŸ¥ç”¨æˆ·é…ç½®å‚æ•°æ˜¯å¦åˆç†
+ * @return OTA_OK: é…ç½®æœ‰æ•ˆ, å…¶ä»–: é”™è¯¯ç 
+ */
 static uint8_t OTA_IsUserSetingsValid(void)
 {
     uint32_t flash_end = OTA_FLASH_START_ADDRESS + OTA_FLASH_SIZE - 1;
     uint32_t app_max_size = OTA_APP_MAX_SIZE;
 
-    /* ·ÖÅä¸øMiniOTAµÄflash¿Õ¼ä±ØĞëÎ»ÓÚ Flash ÄÚ */
+    /* åˆ†é…ç»™MiniOTAçš„flashç©ºé—´å¿…é¡»ä½äº Flash å†… */
     if (OTA_TOTAL_START_ADDRESS < OTA_FLASH_START_ADDRESS ||
         OTA_TOTAL_START_ADDRESS > flash_end)
     {
@@ -133,35 +149,33 @@ static uint8_t OTA_IsUserSetingsValid(void)
         return OTA_ERR_FLASH_RANGE;
     }
 
-    /* MiniOTAÆğÊ¼µØÖ·±ØĞë°´ Flash Ò³¶ÔÆë */
+    /* MiniOTAèµ·å§‹åœ°å€å¿…é¡»æŒ‰ Flash é¡µå¯¹é½ */
     if ((OTA_TOTAL_START_ADDRESS % OTA_FLASH_PAGE_SIZE) != 0)
     {
 		OTA_DebugSend("[OTA][Error]:In OtaInterface - MiniOTA's starting address must be aligned to the Flash page.\r\n");
         return OTA_ERR_ALIGN;
     }
 
-    /* MiniOTAÓÃÓÑµÄflash¿Õ¼ä±ØĞë´óÓÚÒ»¸ö Flash Ò³ */
+    /* MiniOTAå¯ç”¨çš„flashç©ºé—´å¿…é¡»å¤§äºä¸€ä¸ª Flash é¡µ */
     if (app_max_size < OTA_FLASH_PAGE_SIZE)
     {
-		OTA_DebugSend("[OTA][Error]:In OtaInterface - MiniOTA and Yonyou's flash storage space must be larger than one Flash page.\r\n");
+		OTA_DebugSend("[OTA][Error]:In OtaInterface - MiniOTA available flash storage space must be larger than one Flash page.\r\n");
         return OTA_ERR_SIZE;
     }
 
     return OTA_OK;
 }
 
-static void OTA_RunIAP(uint32_t
- 	addr)
+static RecFlagState OTA_RunIAP(uint32_t addr)
 {
 	OTA_DebugSend("[OTA]:IAPing...\r\n");
 	OTA_XmodemInit(addr);
 	while(1)
 	{
-		/* ÖÜÆÚÎª1sµÃ¼ì²é´«ÊäÊÇ·ñÎ´¿ªÊ¼ */
+		/* å‘¨æœŸä¸º1så¾—æ£€æŸ¥ä¼ è¾“æ˜¯å¦æœªå¼€å§‹ */
 		if(OTA_GetXmodemHandle()->state == XM_WAIT_START && OTA_XmodemRevCompFlag() == REC_FLAG_IDLE)
 		{
 			OTA_SendByte(0x43);
-			//OTA_DebugSend("[OTA]Send C\r\n");
 			
 			uint8_t i;
 			for(i = 0; i < 100 ; i++ )
@@ -172,37 +186,40 @@ static void OTA_RunIAP(uint32_t
 		
 		if(OTA_XmodemRevCompFlag() == REC_FLAG_FINISH)
 		{
-			JumpToApp(addr + sizeof(AppImgHeader_t));
+			return REC_FLAG_FINISH;
 		}
 		else if(OTA_XmodemRevCompFlag() == REC_FLAG_INT)
 		{
-			return;
+			return REC_FLAG_INT;
 		}
 	}
 }
 
-// ---------------- ºËĞÄ³õÊ¼»¯º¯Êı ----------------
-
+/**
+ * @brief  MiniOTA ä¸»å…¥å£å‡½æ•°
+ *         æ‰§è¡Œ OTA çŠ¶æ€æ£€æŸ¥ã€åˆ†åŒºéªŒè¯ã€IAP æµç¨‹æ§åˆ¶
+ *         æ­¤å‡½æ•°åº”åœ¨ main å‡½æ•°å¼€å§‹æ—¶è°ƒç”¨
+ */
 void OTA_Run(void) {
     OtaMeta_t meta;
     uint32_t target_addr;
 	
 	while(1)
 	{
-		// ¼ì²éÓÃ»§²ÎÊıÉèÖÃºÏÀíĞÔ
+		// æ£€æŸ¥ç”¨æˆ·å‚æ•°è®¾ç½®åˆç†æ€§
 		if(OTA_IsUserSetingsValid() != OTA_OK)
 		{
 			return;
 		}
 	
-		// ¶ÁÈ¡ Meta ĞÅÏ¢
+		// è¯»å– Meta ä¿¡æ¯
 		meta = *(OtaMeta_t *)OTA_META_ADDR;
 	
-		// ¼ì²é Meta ÊÇ·ñºÏ·¨
+		// æ£€æŸ¥ Meta æ˜¯å¦åˆæ³•
 		if (meta.magic != OTA_MAGIC_NUM) {
-			/* Meta ÎŞĞ§£º
-				ºöÂÔOTA_ShouldEnterIap½Ó¿Ú
-				½«Slot_A×÷ÎªÄ¿±êslot£¬½øĞĞIAP
+			/* Meta æ— æ•ˆï¼š
+				å¿½ç•¥OTA_ShouldEnterIapæ¥å£
+				å°†Slot_Aä½œä¸ºç›®æ ‡slotï¼Œè¿›è¡ŒIAP
 			*/
 			meta.magic = OTA_MAGIC_NUM;
 			meta.seq_num = 0UL;
@@ -210,50 +227,87 @@ void OTA_Run(void) {
 			meta.slotAStatus = SLOT_STATE_EMPTY;
 			meta.slotBStatus = SLOT_STATE_EMPTY;
 			
-			// ±£´æmeta·ÖÇø×´Ì¬
+			// ä¿å­˜metaåˆ†åŒºçŠ¶æ€
 			OTA_SaveMeta(&meta);
 		}
 		
-		// ¸ù¾İ¹Ì¼şÍ·¸üĞÂmetaĞÅÏ¢
+		// æ ¹æ®å›ºä»¶å¤´æ›´æ–°metaä¿¡æ¯
 		OTA_UpdateMeta(&meta);
 		
-		// Èç¹ûÓÃ»§ĞèÒªË¢ÈëĞÂµÄ¹Ì¼ş
+		// å¦‚æœç”¨æˆ·éœ€è¦åˆ·å…¥æ–°çš„å›ºä»¶
 		if(OTA_ShouldEnterIap())
 		{
-			// ·¢ËÍIOMĞÅÏ¢
-			uint32_t tarAddr = (meta.active_slot == SLOT_A) ? OTA_APP_B_ADDR : OTA_APP_A_ADDR;
+			// å‘é€IOMä¿¡æ¯
+			uint32_t tarAddr;
+			// é¦–æ¬¡å†™å…¥flashç‰¹ä¾‹
+			if(meta.active_slot == SLOT_A && meta.slotAStatus == SLOT_STATE_EMPTY)
+			{
+				tarAddr = OTA_APP_A_ADDR;
+			}
+			else
+			{
+				tarAddr = (meta.active_slot == SLOT_A) ? OTA_APP_B_ADDR : OTA_APP_A_ADDR;
+			}
+			
 			OTA_DebugSend("[OTA]:Selecting IAP... \r\n");
 			OTA_DebugSend("[OTA]:Please set the IOM address to : \r\n");
 			OTA_PrintHex32(tarAddr + sizeof(AppImgHeader_t));
 			OTA_DebugSend("\r\n");
 			
-			meta.active_slot = (meta.active_slot == SLOT_A) ? SLOT_B : SLOT_A;
-			meta.state = (meta.active_slot == SLOT_A) ? OTA_STATE_UPDATING_B : OTA_STATE_UPDATING_A;
-			OTA_SaveMeta(&meta);
-			OTA_RunIAP(tarAddr);
+			if(OTA_RunIAP(tarAddr) == REC_FLAG_FINISH)
+			{
+				if(meta.active_slot == SLOT_A)
+				{
+					// é¦–æ¬¡å†™å…¥flashç‰¹ä¾‹
+					if(meta.slotAStatus == SLOT_STATE_EMPTY)
+					{
+						meta.slotAStatus = SLOT_STATE_UNCONFIRMED;
+						meta.active_slot = SLOT_A;
+					}
+					else
+					{
+						meta.slotBStatus = SLOT_STATE_UNCONFIRMED;
+						meta.active_slot = SLOT_B;
+					}
+
+				}
+				else
+				{
+					meta.slotAStatus = SLOT_STATE_UNCONFIRMED;
+					meta.active_slot = SLOT_A;
+				}
+				
+				OTA_SaveMeta(&meta);
+			
+				JumpToApp(tarAddr + sizeof(AppImgHeader_t));
+			}
+			continue;
 		}
 		
-		// È·¶¨Ìø×ªÄ¿±êµØÖ·
+		// ç¡®å®šè·³è½¬ç›®æ ‡åœ°å€
 		target_addr = OTA_GetJumpTar(&meta);
 		if(target_addr != U32_INVALID)
 		{
-			// Ìø×ªµ½Ä¿±êµØÖ·
+			// è·³è½¬åˆ°ç›®æ ‡åœ°å€
 			JumpToApp(target_addr + sizeof(AppImgHeader_t));
 		}
 	
-		// ÎŞ¿ÉÓÃ¹Ì¼ş£¬³¢ÊÔ½ÓÊÕĞÂ¹Ì¼ş
-		meta.active_slot = SLOT_A;
-		meta.state = OTA_STATE_UPDATING_A;
-		// ·¢ËÍIOMĞÅÏ¢
+		// æ— å¯ç”¨å›ºä»¶ï¼Œé»˜è®¤å°è¯•ä½¿ç”¨slot_aæ¥æ”¶æ–°å›ºä»¶
+		// å‘é€IOMä¿¡æ¯
 		OTA_DebugSend("[OTA]:Please set the IOM address to : \r\n");
 		OTA_PrintHex32(OTA_APP_A_ADDR + sizeof(AppImgHeader_t));
 		OTA_DebugSend("\r\n");
 		
-		OTA_SaveMeta(&meta);
+		if(OTA_RunIAP(OTA_APP_A_ADDR) == REC_FLAG_FINISH)
+		{
+			meta.active_slot = SLOT_A;
+			meta.slotAStatus = SLOT_STATE_UNCONFIRMED;
+			meta.slotBStatus = SLOT_STATE_EMPTY;
+			OTA_SaveMeta(&meta);
 		
-		OTA_RunIAP(OTA_APP_A_ADDR);
+			JumpToApp(OTA_APP_A_ADDR + sizeof(AppImgHeader_t));
+		}
+		
+		return;
 	}
 }
-	
-
-

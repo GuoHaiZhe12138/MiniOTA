@@ -1,76 +1,124 @@
+/**
+ ******************************************************************************
+ * @file    OtaUtils.h
+ * @author  MiniOTA Team
+ * @brief   å·¥å…·å‡½æ•°åŠå…¬å…±æ•°æ®ç»“æ„å®šä¹‰
+ *          åŒ…å« OTA æ ¸å¿ƒæ•°æ®ç»“æ„ã€æšä¸¾ã€å®å®šä¹‰åŠå·¥å…·å‡½æ•°å£°æ˜
+ ******************************************************************************
+ * @attention
+ * 
+ * Copyright (c) 2026 MiniOTA.
+ * All rights reserved.
+ *
+ ******************************************************************************
+ */
 
 #ifndef OTAUTILS_H
 #define OTAUTILS_H
 
-// ---------------- ÅäÖÃÇøÓò ----------------
-#define OTA_MAGIC_NUM       0x5A5A0001  // ÓÃÓÚÊ¶±ğ Meta Êı¾İÓĞĞ§ĞÔ
-#define APP_MAGIC_NUM       0x424C4150  // "BLAP" - BootLoader APp
-#define U32_INVALID			0UL			// 32bit ÎŞĞ§Öµ
+#include <stdint.h>
 
-// app slot×´Ì¬Ã¶¾Ù
+/** @defgroup OTA_Configuration_Constants
+ * @{
+ */
+#define OTA_MAGIC_NUM       0x5A5A0001  /**< Meta æ•°æ®æœ‰æ•ˆæ€§è¯†åˆ«é­”æ•° */
+#define APP_MAGIC_NUM       0x424C4150  /**< "BLAP" - BootLoader APp å›ºä»¶å¤´é­”æ•° */
+#define U32_INVALID         0UL         /**< 32ä½æ— æ•ˆå€¼ */
+/**
+ * @}
+ */
+
+/** @defgroup OTA_Enumerations
+ * @{
+ */
+
+/**
+ * @brief App åˆ†åŒºçŠ¶æ€æšä¸¾
+ */
 typedef enum {
-    SLOT_STATE_EMPTY = 0xFF,    // ³õÊ¼×´Ì¬/ÒÑ²Á³ı
-    SLOT_STATE_UNCONFIRMED = 0, // ¸ÕË¢Íê£¬»¹Ã»³É¹¦Æô¶¯¹ı
-    SLOT_STATE_VALID = 1,       // ÒÑ¾­³É¹¦Æô¶¯¹ı£¬ÊÇ°²È«µÄ±¸·İ
-    SLOT_STATE_INVALID = 2      // Ğ£ÑéÊ§°Ü»òÆô¶¯¹ı³ÌÖĞ·ÉÁË
+    SLOT_STATE_EMPTY = 0xFF,    /**< åˆå§‹çŠ¶æ€/å·²æ“¦é™¤ */
+    SLOT_STATE_UNCONFIRMED = 0, /**< åˆšåˆ·å®Œï¼Œå°šæœªæˆåŠŸå¯åŠ¨è¿‡ */
+    SLOT_STATE_VALID = 1,       /**< å·²ç»æˆåŠŸå¯åŠ¨è¿‡ï¼Œæ˜¯å®‰å…¨çš„å¤‡ä»½ */
+    SLOT_STATE_INVALID = 2      /**< æ ¡éªŒå¤±è´¥æˆ–å¯åŠ¨è¿‡ç¨‹ä¸­å¼‚å¸¸ */
 } SlotState_e;
 
-/* FlashÄÚAPP´úÂë¼ì²é½á¹ûÃ¶¾Ù */
+/**
+ * @brief Flash å†… App ä»£ç æ£€æŸ¥ç»“æœæšä¸¾
+ */
 typedef enum
 {
-    APP_CHECK_OK = 0,        /* App ºÏ·¨ */
-    APP_CHECK_SP_INVALID,    /* ³õÊ¼¶ÑÕ»Ö¸ÕëÎŞĞ§ */
-    APP_CHECK_PC_INVALID     /* ¸´Î»ÏòÁ¿·Ç·¨£¨·Ç Thumb µØÖ·£© */
+    APP_CHECK_OK = 0,        /**< App åˆæ³• */
+    APP_CHECK_SP_INVALID,    /**< åˆå§‹å †æ ˆæŒ‡é’ˆæ— æ•ˆ */
+    APP_CHECK_PC_INVALID     /**< å¤ä½å‘é‡éæ³•ï¼ˆé Thumb åœ°å€ï¼‰ */
 } AppCheckResult_t;
 
-// ÓÃ»§ÉèÖÃ²ÎÊıºÏÀíĞÔ¼ì²é½á¹û¶¨Òå
+/**
+ * @brief ç”¨æˆ·è®¾ç½®å‚æ•°åˆç†æ€§æ£€æŸ¥ç»“æœæšä¸¾
+ */
 typedef enum
 {
-    OTA_OK = 0,               /* ²ÎÊıºÏ·¨ */
-    OTA_ERR_FLASH_RANGE,      /* App Çø¼ä³¬³ö Flash ·¶Î§ */
-    OTA_ERR_ALIGN,            /* App ÆğÊ¼µØÖ·Î´¶ÔÆë Flash Ò³ */
-    OTA_ERR_SIZE,             /* App ÇøÓò´óĞ¡²»ºÏ·¨ */
+    OTA_OK = 0,               /**< å‚æ•°åˆæ³• */
+    OTA_ERR_FLASH_RANGE,      /**< App åŒºé—´è¶…å‡º Flash èŒƒå›´ */
+    OTA_ERR_ALIGN,            /**< App èµ·å§‹åœ°å€æœªå¯¹é½ Flash é¡µ */
+    OTA_ERR_SIZE,             /**< App åŒºåŸŸå¤§å°ä¸åˆæ³• */
 } OTA_Status_t;
 
-// Ä¿±ê²å²ÛÃ¶¾Ù
+/**
+ * @brief ç›®æ ‡æ’æ§½æšä¸¾
+ */
 typedef enum {
-    SLOT_A = 0,
-    SLOT_B = 1
+    SLOT_A = 0,              /**< åˆ†åŒº A */
+    SLOT_B = 1               /**< åˆ†åŒº B */
 } ActiveSlot_e;
+/**
+ * @}
+ */
 
-// ---------------- ½á¹¹Ìå¶¨Òå ----------------
+/** @defgroup OTA_Data_Structures
+ * @{
+ */
 
-//#pragma pack(push, 1)
-
-// ¹Ì¼şÍ·²¿½á¹¹ (·ÅÔÚÃ¿¸ö Slot µÄÍ·²¿)
+/**
+ * @brief å›ºä»¶å¤´éƒ¨ç»“æ„ (æ”¾åœ¨æ¯ä¸ª Slot çš„å¤´éƒ¨)
+ */
 typedef struct {
-    uint32_t magic;         // ¹Ì¶¨Ä§Êı£¬ÓÃÓÚ¿ìËÙĞ£ÑéÍ·²¿ÊÇ·ñ´æÔÚ
-    uint32_t img_size;      // ¹Ì¼şÊµ¼Ê´óĞ¡ (²»º¬Í·)
-    uint32_t version;       // °æ±¾ºÅ (ÓÃÓÚ±È½ÏĞÂ¾É)
-	uint16_t img_crc16;     // ¹Ì¼şÊı¾İµÄ CRC32 Ğ£ÑéÖµ
-    uint8_t  reserved[2];   // ÒÔ´Ë±£Ö¤½á¹¹Ìå16byte¶ÔÆë
+    uint32_t magic;         /**< å›ºå®šé­”æ•°ï¼Œç”¨äºå¿«é€Ÿæ ¡éªŒå¤´éƒ¨æ˜¯å¦å­˜åœ¨ */
+    uint32_t img_size;      /**< å›ºä»¶å®é™…å¤§å° (ä¸å«å¤´) */
+    uint32_t version;       /**< ç‰ˆæœ¬å· (ç”¨äºæ¯”è¾ƒæ–°æ—§) */
+    uint16_t img_crc16;     /**< å›ºä»¶æ•°æ®çš„ CRC16 æ ¡éªŒå€¼ */
+    uint8_t  reserved[2];   /**< ä¿ç•™å­—æ®µï¼Œä¿è¯ç»“æ„ä½“16å­—èŠ‚å¯¹é½ */
 } AppImgHeader_t;
 
-// Meta ·ÖÇø½á¹¹ (È«¾Ö×´Ì¬)
+/**
+ * @brief Meta åˆ†åŒºç»“æ„ (å…¨å±€çŠ¶æ€)
+ */
 typedef struct {
-    uint32_t     magic;       // Meta Êı¾İÓĞĞ§ĞÔÄ§Êı
-    uint32_t     seq_num;     // ĞòÁĞºÅ (Ã¿´Î¸üĞÂ+1£¬ÓÃÓÚ¼òµ¥µÄÊÙÃü¾ùºâ»ò°æ±¾×·×Ù)
-    ActiveSlot_e active_slot; // µ±Ç°Ó¦Æô¶¯µÄ²å²Û (A »ò B)
-    SlotState_e  slotAStatus; // slotA×´Ì¬
-	SlotState_e  slotBStatus; // slotB×´Ì¬
-	uint8_t  reserved[5];     // ±£Ö¤½á¹¹Ìå16byte¶ÔÆë
+    uint32_t     magic;       /**< Meta æ•°æ®æœ‰æ•ˆæ€§é­”æ•° */
+    uint32_t     seq_num;     /**< åºåˆ—å· (æ¯æ¬¡æ›´æ–°+1ï¼Œç”¨äºç®€å•çš„å¯¿å‘½å‡è¡¡æˆ–ç‰ˆæœ¬è¿½è¸ª) */
+    ActiveSlot_e active_slot; /**< å½“å‰åº”å¯åŠ¨çš„æ’æ§½ (A æˆ– B) */
+    SlotState_e  slotAStatus; /**< slotA çŠ¶æ€ */
+    SlotState_e  slotBStatus; /**< slotB çŠ¶æ€ */
+    uint8_t      reserved[5]; /**< ä¿ç•™å­—æ®µï¼Œä¿è¯ç»“æ„ä½“16å­—èŠ‚å¯¹é½ */
 } OtaMeta_t;
 
-// Appº¯ÊıÖ¸Õë¶¨Òå
+/**
+ * @brief åº”ç”¨å‡½æ•°æŒ‡é’ˆç±»å‹å®šä¹‰
+ */
 typedef void (*pFunction)(void);
+/**
+ * @}
+ */
 
+/** @defgroup OTA_Utility_Functions
+ * @{
+ */
 void U8ArryCopy(uint8_t *dst, const uint8_t *src, uint32_t len);
 uint16_t XmodemCrc16(const uint8_t *buf, uint32_t len);
-// ¹Ì¼şºÏÀíĞÔÅĞ¶Ï
-
 void OTA_MemSet(uint8_t *dst, uint8_t val, uint32_t len);
 void OTA_MemCopy(uint8_t *dst, const uint8_t *src, uint32_t len);
 void OTA_PrintHex32(uint32_t value);
+/**
+ * @}
+ */
 
-//#pragma pack(pop)
 #endif
