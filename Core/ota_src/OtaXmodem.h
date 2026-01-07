@@ -39,7 +39,8 @@
 /**
  * @brief Xmodem 状态机状态枚举
  */
-typedef enum {
+typedef enum __OTA_XM_STATE
+{
     XM_WAIT_START = 0,  /**< 等待起始符 */
     XM_WAIT_BLK,        /**< 等待包序号 */
     XM_WAIT_BLK_INV,    /**< 等待包序号反码 */
@@ -47,23 +48,25 @@ typedef enum {
     XM_WAIT_CRC1,       /**< 等待CRC高字节 */
     XM_WAIT_CRC2,       /**< 等待CRC低字节 */
     XM_STATE_MAX        /**< 状态总数 */
-} xm_state_t;
+} OTA_XM_STATE_E;
 
 /**
  * @brief 接收完成标志枚举
  */
-typedef enum {
+typedef enum __OTA_REC_FLAG_STATE
+{
     REC_FLAG_IDLE = 0,  /**< 空闲 */
     REC_FLAG_WORKING,   /**< 传输进行中 */
     REC_FLAG_FINISH,    /**< 传输完成 */
     REC_FLAG_INT        /**< 传输中断 */
-} RecFlagState;
+} OTA_REC_FLAG_STATE_E;
 
 /**
  * @brief Xmodem 协议句柄结构体
  */
-typedef struct {
-    xm_state_t state;        /**< 当前状态 */
+typedef struct __OTA_XMODEM_HANDLE
+{
+    OTA_XM_STATE_E state;        /**< 当前状态 */
     uint8_t    blk;          /**< 当前包序号 */
     uint8_t    blk_inv;      /**< 当前包序号反码 */
     uint8_t    expected_blk; /**< 期望的下一包序号 */
@@ -72,7 +75,7 @@ typedef struct {
     uint16_t   crc_recv;     /**< 接收到的CRC值 */
     uint16_t   crc_calc;     /**< 计算得到的CRC值 */
     uint8_t    data_buf[1024]; /**< 数据缓冲区 */
-} xmodem_t;
+} OTA_XMODEM_HANDLE;
 
 /**
  * @brief 状态处理函数指针类型
@@ -108,7 +111,7 @@ uint8_t OTA_XmodemRevCompFlag(void);
  * @brief  获取 Xmodem 状态
  * @return Xmodem 状态
  */
-xm_state_t OTA_GetXmodemState(void);
+OTA_XM_STATE_E OTA_GetXmodemState(void);
 /**
  * @}
  */

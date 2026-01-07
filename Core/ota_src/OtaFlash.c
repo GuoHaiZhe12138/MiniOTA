@@ -19,13 +19,13 @@
 #include "OtaUtils.h"
 
 /** Flash 句柄，全局唯一 */
-static flashHandle_t flash = {0};
+static OTA_FLASH_HANDLE flash;
 
 /**
  * @brief  获取当前 Flash 操作地址
  * @return 当前地址
  */
-uint32_t Flash_GetCurAddr(void)
+uint32_t OTA_FlashGetCurAddr(void)
 {
 	return flash.curr_addr;
 }
@@ -34,7 +34,7 @@ uint32_t Flash_GetCurAddr(void)
  * @brief  设置当前 Flash 操作地址
  * @param  ch: 目标地址
  */
-void Flash_SetCurAddr(uint32_t ch)
+void OTA_FlashSetCurAddr(uint32_t ch)
 {
 	flash.curr_addr = ch;
 }
@@ -43,7 +43,7 @@ void Flash_SetCurAddr(uint32_t ch)
  * @brief  获取当前页内偏移
  * @return 页内偏移
  */
-uint16_t Flash_GetPageOffset(void)
+uint16_t OTA_FlashGetPageOffset(void)
 {
 	return flash.page_offset;
 }
@@ -52,7 +52,7 @@ uint16_t Flash_GetPageOffset(void)
  * @brief  设置当前页内偏移
  * @param  ch: 目标偏移
  */
-void Flash_SetPageOffset(uint16_t ch)
+void OTA_FlashSetPageOffset(uint16_t ch)
 {
 	flash.page_offset = ch;
 }
@@ -61,7 +61,7 @@ void Flash_SetPageOffset(uint16_t ch)
  * @brief  获取页缓冲区的指针
  * @return 页缓冲区指针
  */
-uint8_t *Flash_GetMirr(void)
+uint8_t *OTA_FlashGetMirr(void)
 {
 	return flash.page_buf;
 }
@@ -71,7 +71,7 @@ uint8_t *Flash_GetMirr(void)
  * @param  mirr: 源数据指针
  * @param  length: 复制长度
  */
-void Flash_SetMirr(const uint8_t *mirr, uint16_t length)
+void OTA_FlashSetMirr(const uint8_t *mirr, uint16_t length)
 {
 	OTA_MemCopy(flash.page_buf, mirr, length);
 }
@@ -80,7 +80,7 @@ void Flash_SetMirr(const uint8_t *mirr, uint16_t length)
  * @brief  初始化 Flash 句柄，并预读当前页内容
  * @param  addr: 起始地址
  */
-void FlashHandle_Init(uint32_t addr)
+void OTA_FlashHandleInit(uint32_t addr)
 {
     flash.curr_addr   = addr;
     flash.page_offset = 0;
@@ -92,7 +92,7 @@ void FlashHandle_Init(uint32_t addr)
  * @brief  将页缓冲区写入 Flash，包含擦除、编程、校验全流程
  * @return 0: 成功, 1: 失败
  */
-int Flash_Write(void)
+int OTA_FlashWrite(void)
 {
     /* 打开 Flash（解锁） */
     if (OTA_FlashUnlock() != 0)

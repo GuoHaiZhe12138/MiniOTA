@@ -24,7 +24,7 @@
  * @param  src: 源缓冲区
  * @param  len: 复制长度
  */
-void U8ArryCopy(uint8_t *dst, const uint8_t *src, uint32_t len)
+void OTA_U8ArryCopy(uint8_t *dst, const uint8_t *src, uint32_t len)
 {
     if (dst == 0 || src == 0) return;
 
@@ -40,7 +40,7 @@ void U8ArryCopy(uint8_t *dst, const uint8_t *src, uint32_t len)
  * @param  len: 数据长度
  * @return CRC16 校验值
  */
-uint16_t XmodemCrc16(const uint8_t *buf, uint32_t len)
+uint16_t OTA_GetCrc16(const uint8_t *buf, uint32_t len)
 {
     uint16_t crc = 0;
     for (uint32_t i = 0; i < len; i++)

@@ -26,7 +26,7 @@
  */
 static int Verify_App_Slot(uint32_t slot_addr) {
 	
-    AppImgHeader_t *header = (AppImgHeader_t*)slot_addr;
+    OTA_APP_IMG_HEADER_E *header = (OTA_APP_IMG_HEADER_E*)slot_addr;
 
     // 1. 检查魔数
     if (header->magic != APP_MAGIC_NUM) {
@@ -39,8 +39,8 @@ static int Verify_App_Slot(uint32_t slot_addr) {
     }
 
     // 3. 计算固件体的 CRC (注意：固件体紧跟在 Header 后面)
-    const uint8_t *bin_start = (const uint8_t *)(slot_addr + sizeof(AppImgHeader_t));
-    uint16_t cal_crc = XmodemCrc16(bin_start, header->img_size);
+    const uint8_t *bin_start = (const uint8_t *)(slot_addr + sizeof(OTA_APP_IMG_HEADER_E));
+    uint16_t cal_crc = OTA_GetCrc16(bin_start, header->img_size);
 
     if (cal_crc != header->img_crc16) {
         return 0; // CRC 校验失败
@@ -53,16 +53,16 @@ static int Verify_App_Slot(uint32_t slot_addr) {
  * @brief  将 Meta 信息保存到 Flash 状态区
  * @param  pMeta: 指向 Meta 结构体的指针
  */
-static void OTA_SaveMeta(OtaMeta_t *pMeta) {
+static void OTA_SaveMeta(OTA_META_DATA_E *pMeta) {
     uint8_t flashPage[OTA_FLASH_PAGE_SIZE];
     OTA_MemSet(flashPage, 0xFF, OTA_FLASH_PAGE_SIZE);
-    OTA_MemCopy(flashPage, (uint8_t *)pMeta, sizeof(OtaMeta_t));
-    Flash_SetCurAddr(OTA_META_ADDR);
-    Flash_SetMirr(flashPage, OTA_FLASH_PAGE_SIZE);
-    Flash_Write();
+    OTA_MemCopy(flashPage, (uint8_t *)pMeta, sizeof(OTA_META_DATA_E));
+    OTA_FlashSetCurAddr(OTA_META_ADDR);
+    OTA_FlashSetMirr(flashPage, OTA_FLASH_PAGE_SIZE);
+    OTA_FlashWrite();
 }
 
-static void OTA_UpdateMeta(OtaMeta_t *pMeta)
+static void OTA_UpdateMeta(OTA_META_DATA_E *pMeta)
 {
 	uint8_t isSlotAValid = Verify_App_Slot(OTA_APP_A_ADDR);
 	uint8_t isSlotBValid = Verify_App_Slot(OTA_APP_B_ADDR);
@@ -95,7 +95,7 @@ static void OTA_UpdateMeta(OtaMeta_t *pMeta)
 	OTA_SaveMeta(pMeta);
 }
 
-static uint32_t OTA_GetJumpTar(OtaMeta_t *pMeta)
+static uint32_t OTA_GetJumpTar(OTA_META_DATA_E *pMeta)
 {
 	
 	if(pMeta->active_slot == SLOT_A)
@@ -166,7 +166,7 @@ static uint8_t OTA_IsUserSetingsValid(void)
     return OTA_OK;
 }
 
-static RecFlagState OTA_RunIAP(uint32_t addr)
+static OTA_REC_FLAG_STATE_E OTA_RunIAP(uint32_t addr)
 {
 	OTA_DebugSend("[OTA]:IAPing...\r\n");
 	OTA_XmodemInit(addr);
@@ -201,7 +201,7 @@ static RecFlagState OTA_RunIAP(uint32_t addr)
  *         此函数应在 main 函数开始时调用
  */
 void OTA_Run(void) {
-    OtaMeta_t meta;
+    OTA_META_DATA_E meta;
     uint32_t target_addr;
 	
 	while(1)
@@ -213,7 +213,7 @@ void OTA_Run(void) {
 		}
 	
 		// 读取 Meta 信息
-		meta = *(OtaMeta_t *)OTA_META_ADDR;
+		meta = *(OTA_META_DATA_E *)OTA_META_ADDR;
 	
 		// 检查 Meta 是否合法
 		if (meta.magic != OTA_MAGIC_NUM) {
@@ -251,7 +251,7 @@ void OTA_Run(void) {
 			
 			OTA_DebugSend("[OTA]:Selecting IAP... \r\n");
 			OTA_DebugSend("[OTA]:Please set the IOM address to : \r\n");
-			OTA_PrintHex32(tarAddr + sizeof(AppImgHeader_t));
+			OTA_PrintHex32(tarAddr + sizeof(OTA_APP_IMG_HEADER_E));
 			OTA_DebugSend("\r\n");
 			
 			if(OTA_RunIAP(tarAddr) == REC_FLAG_FINISH)
@@ -279,7 +279,7 @@ void OTA_Run(void) {
 				
 				OTA_SaveMeta(&meta);
 			
-				JumpToApp(tarAddr + sizeof(AppImgHeader_t));
+				OTA_JumpToApp(tarAddr + sizeof(OTA_APP_IMG_HEADER_E));
 			}
 			continue;
 		}
@@ -289,13 +289,13 @@ void OTA_Run(void) {
 		if(target_addr != U32_INVALID)
 		{
 			// 跳转到目标地址
-			JumpToApp(target_addr + sizeof(AppImgHeader_t));
+			OTA_JumpToApp(target_addr + sizeof(OTA_APP_IMG_HEADER_E));
 		}
 	
 		// 无可用固件，默认尝试使用slot_a接收新固件
 		// 发送IOM信息
 		OTA_DebugSend("[OTA]:Please set the IOM address to : \r\n");
-		OTA_PrintHex32(OTA_APP_A_ADDR + sizeof(AppImgHeader_t));
+		OTA_PrintHex32(OTA_APP_A_ADDR + sizeof(OTA_APP_IMG_HEADER_E));
 		OTA_DebugSend("\r\n");
 		
 		if(OTA_RunIAP(OTA_APP_A_ADDR) == REC_FLAG_FINISH)
@@ -305,7 +305,7 @@ void OTA_Run(void) {
 			meta.slotBStatus = SLOT_STATE_EMPTY;
 			OTA_SaveMeta(&meta);
 		
-			JumpToApp(OTA_APP_A_ADDR + sizeof(AppImgHeader_t));
+			OTA_JumpToApp(OTA_APP_A_ADDR + sizeof(OTA_APP_IMG_HEADER_E));
 		}
 		
 		return;

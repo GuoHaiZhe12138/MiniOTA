@@ -24,11 +24,12 @@
 /**
  * @brief Flash 操作句柄结构体
  */
-typedef struct {
+typedef struct __OTA_FLASH_HANDLE
+{
     uint32_t curr_addr;          /**< 当前操作的 Flash 地址 */
     uint16_t page_offset;        /**< 当前页内的偏移量 */
     uint8_t  page_buf[OTA_FLASH_PAGE_SIZE];  /**< 页缓冲区，大小为 Flash 页大小 */
-} flashHandle_t;
+} OTA_FLASH_HANDLE;
 /**
  * @}
  */
@@ -37,49 +38,49 @@ typedef struct {
  * @brief  获取当前 Flash 操作地址
  * @return 当前地址
  */
-uint32_t Flash_GetCurAddr(void);
+uint32_t OTA_FlashGetCurAddr(void);
 
 /**
  * @brief  获取当前页内偏移
  * @return 页内偏移
  */
-uint16_t Flash_GetPageOffset(void);
+uint16_t OTA_FlashGetPageOffset(void);
 
 /**
  * @brief  获取页缓冲区的指针
  * @return 页缓冲区指针
  */
-uint8_t *Flash_GetMirr(void);
+uint8_t *OTA_FlashGetMirr(void);
 
 /**
  * @brief  设置当前 Flash 操作地址
  * @param  ch: 目标地址
  */
-void Flash_SetCurAddr(uint32_t ch);
+void OTA_FlashSetCurAddr(uint32_t ch);
 
 /**
  * @brief  设置当前页内偏移
  * @param  ch: 目标偏移
  */
-void Flash_SetPageOffset(uint16_t ch);
+void OTA_FlashSetPageOffset(uint16_t ch);
 
 /**
  * @brief  将数据复制到页缓冲区
  * @param  mirr: 源数据指针
  * @param  length: 复制长度
  */
-void Flash_SetMirr(const uint8_t *mirr, uint16_t length);
+void OTA_FlashSetMirr(const uint8_t *mirr, uint16_t length);
 
 /**
  * @brief  初始化 Flash 句柄，并预读当前页内容
  * @param  addr: 起始地址
  */
-void FlashHandle_Init(uint32_t addr);
+void OTA_FlashHandleInit(uint32_t addr);
 
 /**
  * @brief  将页缓冲区写入 Flash，包含擦除、编程、校验全流程
  * @return 0: 成功, 1: 失败
  */
-int Flash_Write(void);
+int OTA_FlashWrite(void);
 
 #endif

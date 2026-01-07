@@ -21,10 +21,10 @@
 
 
 /** Xmodem 协议句柄 */
-static xmodem_t xm;
+static OTA_XMODEM_HANDLE xm;
 
 /** 接收完成标志 */
-static RecFlagState RecComp_Flag;
+static OTA_REC_FLAG_STATE_E RecComp_Flag;
 
 /* 状态处理函数声明 */
 static void Handle_WaitStart(uint8_t ch);
@@ -52,19 +52,19 @@ static const xm_state_fn_t xm_state_handlers[XM_STATE_MAX] = {
  */
 void OTA_XmodemInit(uint32_t addr)
 {
-    OTA_MemSet((uint8_t *)&xm, 0, sizeof(xmodem_t));
+    OTA_MemSet((uint8_t *)&xm, 0, sizeof(OTA_XMODEM_HANDLE));
     xm.state = XM_WAIT_START;
     xm.expected_blk = 1; // Xmodem协议通常从包号1开始
     RecComp_Flag = REC_FLAG_IDLE;
     
-    FlashHandle_Init(addr);
+    OTA_FlashHandleInit(addr);
 }
 
 /**
  * @brief  获取 Xmodem 状态
  * @return Xmodem 状态
  */
-xm_state_t OTA_GetXmodemState(void)
+OTA_XM_STATE_E OTA_GetXmodemState(void)
 {
     return xm.state;
 }
@@ -121,9 +121,9 @@ static void Handle_WaitStart(uint8_t ch)
         OTA_SendByte(XM_ACK);      // ACK
         
         // 若镜像区还有写回的数据
-        if(Flash_GetPageOffset() > 0)
+        if(OTA_FlashGetPageOffset() > 0)
         {
-            Flash_Write();
+            OTA_FlashWrite();
         }
         RecComp_Flag = REC_FLAG_FINISH;
 		return;
@@ -200,7 +200,7 @@ static void Handle_WaitCrc2(uint8_t ch)
 	OTA_DebugSend("[OTA]:Get Crc2\r\n");
     xm.crc_recv |= ch;
 
-    xm.crc_calc = XmodemCrc16(xm.data_buf, xm.data_len);
+    xm.crc_calc = OTA_GetCrc16(xm.data_buf, xm.data_len);
 
     // 1. CRC校验通过
     if (xm.crc_calc == xm.crc_recv)
@@ -209,21 +209,21 @@ static void Handle_WaitCrc2(uint8_t ch)
         if (xm.blk == xm.expected_blk)
         {
             // 检查flash镜像是否还能容纳本小包数据
-            if(OTA_FLASH_PAGE_SIZE - Flash_GetPageOffset() < xm.data_len)
+            if(OTA_FLASH_PAGE_SIZE - OTA_FlashGetPageOffset() < xm.data_len)
             {
                 // 先进行一次flash写入，更新镜像
-                if (Flash_Write() != 0) {
+                if (OTA_FlashWrite() != 0) {
                     xm.state = XM_WAIT_START;
                     return; 
                 }
             }
 
 			// 把接收到的包存进当前Flash页的镜像中，等待写入Flash
-            U8ArryCopy(&(Flash_GetMirr()[Flash_GetPageOffset()]), xm.data_buf, xm.data_len);
+            OTA_U8ArryCopy(&(OTA_FlashGetMirr()[OTA_FlashGetPageOffset()]), xm.data_buf, xm.data_len);
             
             // 更新状态
             xm.expected_blk++;
-			Flash_SetPageOffset(Flash_GetPageOffset() + xm.data_len);
+			OTA_FlashSetPageOffset(OTA_FlashGetPageOffset() + xm.data_len);
             
             OTA_SendByte(XM_ACK);     // ACK
         }

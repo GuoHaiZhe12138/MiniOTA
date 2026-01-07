@@ -296,10 +296,10 @@ MiniOTA 框架基于标准 ARM Cortex-M 内核架构设计，支持所有具有 
 
 ### 跳转流程兼容性分析
 
-MiniOTA 的核心跳转函数 `JumpToApp` 使用以下标准 Cortex-M 特性，这些特性在上述所有支持的内核中都存在：
+MiniOTA 的核心跳转函数 `OTA_JumpToApp` 使用以下标准 Cortex-M 特性，这些特性在上述所有支持的内核中都存在：
 
 ```c
-void JumpToApp(uint32_t des_addr) {
+void OTA_JumpToApp(uint32_t des_addr) {
     // 1. 关中断 - 使用 __disable_irq()，所有 Cortex-M 内核通用
     __disable_irq();
     

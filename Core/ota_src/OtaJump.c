@@ -26,13 +26,13 @@
  * @param  app_pc: 应用程序计数器值
  * @return 检查结果枚举
  */
-AppCheckResult_t OTA_IsAppValid(uint32_t app_sp, uint32_t app_pc);
+OTA_APP_CHECK_RESULT_E OTA_IsAppValid(uint32_t app_sp, uint32_t app_pc);
 
 /**
  * @brief  跳转到目标应用
  * @param  des_addr: 目标应用起始地址（向量表地址）
  */
-void JumpToApp(uint32_t des_addr)
+void OTA_JumpToApp(uint32_t des_addr)
 {
     uint32_t app_sp;
     uint32_t app_reset;
@@ -64,7 +64,7 @@ void JumpToApp(uint32_t des_addr)
 }
 
 /* 检查 App 向量表 SP/PC 是否有效 */
-AppCheckResult_t OTA_IsAppValid(uint32_t app_sp, uint32_t app_pc)
+OTA_APP_CHECK_RESULT_E OTA_IsAppValid(uint32_t app_sp, uint32_t app_pc)
 {
 
     /* 1. 检查 SP 是否在 SRAM 范围内 */
