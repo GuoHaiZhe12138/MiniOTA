@@ -63,7 +63,6 @@
  * @}
  */
 
-
 /** @defgroup OTA_Internal_Memory_Map
  * @{
  */

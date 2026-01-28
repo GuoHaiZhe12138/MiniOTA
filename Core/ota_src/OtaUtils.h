@@ -96,7 +96,6 @@ typedef struct __OTA_META_DATA
  */
 typedef void (*pFunction)(void);
 
-
 void OTA_U8ArryCopy(uint8_t *dst, const uint8_t *src, uint32_t len);
 uint16_t OTA_GetCrc16(const uint8_t *buf, uint32_t len);
 void OTA_MemSet(uint8_t *dst, uint8_t val, uint32_t len);

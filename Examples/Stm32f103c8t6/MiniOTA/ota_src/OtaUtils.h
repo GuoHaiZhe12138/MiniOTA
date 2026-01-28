@@ -103,5 +103,4 @@ void OTA_MemSet(uint8_t *dst, uint8_t val, uint32_t len);
 void OTA_MemCopy(uint8_t *dst, const uint8_t *src, uint32_t len);
 void OTA_PrintHex32(uint32_t value);
 
-
 #endif
