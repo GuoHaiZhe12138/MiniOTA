@@ -13,9 +13,6 @@
  ******************************************************************************
  */
 
-#include "stdint.h"
-#include "stm32f10x.h"
-
 #include "OtaInterface.h"
 #include "OtaUtils.h"
 #include "OtaPort.h"

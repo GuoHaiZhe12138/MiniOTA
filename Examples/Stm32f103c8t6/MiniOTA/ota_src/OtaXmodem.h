@@ -16,7 +16,6 @@
 #ifndef __OTAXMODEM_H
 #define __OTAXMODEM_H
 
-#include <stdint.h>
 #include "OtaInterface.h"
 
 /** @defgroup XMODEM_Control_Characters

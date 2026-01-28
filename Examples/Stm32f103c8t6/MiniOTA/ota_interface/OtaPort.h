@@ -10,7 +10,7 @@
 #ifndef OTAPORT_H
 #define OTAPORT_H
 
-#include <stdint.h>
+#include <OtaInterface.h>
 
 /**
  * @brief  判断是否应强制进入 IAP 模式

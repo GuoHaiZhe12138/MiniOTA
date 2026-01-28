@@ -13,7 +13,6 @@
  ******************************************************************************
  */
 
-#include "stdint.h"
 #include "OtaPort.h"
 #include "OtaUtils.h"
 #include "OtaInterface.h"

@@ -22,6 +22,28 @@
 /** @defgroup OTA_Flash_Layout_Settings
  * @{
  */
+
+/* =====================================================================
+ *  CMSIS 设备头文件配置
+ * =====================================================================
+ *  本框架只依赖 ARM CMSIS-Core，不直接依赖任何厂商 HAL。
+ *  用户【必须】在此处包含且仅包含一个 CMSIS 设备头文件，
+ *  该头文件通常由芯片厂商提供，用于描述具体 MCU 的内核配置。
+ *
+ *  示例（根据所用芯片选择其一）：
+ *
+ *      #include "stm32f103xb.h"   // STM32F1，Cortex-M3
+ *      #include "stm32f407xx.h"   // STM32F4，Cortex-M4
+ *      #include "gd32f30x.h"      // GD32，Cortex-M3
+ *      #include "sam3x8e.h"       // Microchip SAM3，Cortex-M3
+ *  要求：
+ *    - 该头文件必须符合 CMSIS 规范
+ *    - 内部应正确包含 core_cmX.h（X = 3 / 4 / 7 等）
+ *  注意：
+ *    - ❌ 不要在此处直接包含 core_cmX.h
+ *    - ❌ 不要包含 HAL / 外设驱动头文件 */
+#include ".h"
+
 /* Flash 总大小 */
 #define OTA_FLASH_SIZE            0x8000
 
@@ -39,6 +61,7 @@
 /**
  * @}
  */
+
 
 /** @defgroup OTA_Internal_Memory_Map
  * @{
