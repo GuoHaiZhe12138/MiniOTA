@@ -24,13 +24,6 @@
 #define OTA_MAGIC_NUM       0x5A5A0001  /**< Meta 数据有效性识别魔数 */
 #define APP_MAGIC_NUM       0x424C4150  /**< "BLAP" - BootLoader APp 固件头魔数 */
 #define U32_INVALID         0UL         /**< 32位无效值 */
-/**
- * @}
- */
-
-/** @defgroup OTA_Enumerations
- * @{
- */
 
 /**
  * @brief App 分区状态枚举
@@ -72,13 +65,6 @@ typedef enum __OTA_ACIVE_SLOT
     SLOT_A = 0,              /**< 分区 A */
     SLOT_B = 1               /**< 分区 B */
 } OTA_ACIVE_SLOT_E;
-/**
- * @}
- */
-
-/** @defgroup OTA_Data_Structures
- * @{
- */
 
 /**
  * @brief 固件头部结构 (放在每个 Slot 的头部)
@@ -109,20 +95,12 @@ typedef struct __OTA_META_DATA
  * @brief 应用函数指针类型定义
  */
 typedef void (*pFunction)(void);
-/**
- * @}
- */
 
-/** @defgroup OTA_Utility_Functions
- * @{
- */
+
 void OTA_U8ArryCopy(uint8_t *dst, const uint8_t *src, uint32_t len);
 uint16_t OTA_GetCrc16(const uint8_t *buf, uint32_t len);
 void OTA_MemSet(uint8_t *dst, uint8_t val, uint32_t len);
 void OTA_MemCopy(uint8_t *dst, const uint8_t *src, uint32_t len);
 void OTA_PrintHex32(uint32_t value);
-/**
- * @}
- */
 
 #endif

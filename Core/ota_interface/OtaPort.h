@@ -10,7 +10,7 @@
 #ifndef OTAPORT_H
 #define OTAPORT_H
 
-#include <stdint.h>
+#include <OtaInterface.h>
 
 /**
  * @brief  判断是否应强制进入 IAP 模式
@@ -24,9 +24,6 @@ uint8_t OTA_ShouldEnterIap(void);
  */
 void OTA_PeripheralsDeInit(void);
 
-/** @defgroup OTA_Flash_Driver_Interface
- * @{
- */
 /**
  * @brief  解锁 Flash 写入权限
  * @return 1: 成功, 0: 失败
@@ -61,9 +58,6 @@ int OTA_DrvProgramHalfword(uint32_t addr, uint16_t data);
  * @param  len: 读取长度
  */
 void OTA_DrvRead(uint32_t addr, uint8_t *buf, uint16_t len);
-/**
- * @}
- */
 
 /**
  * @brief  向外部发送一个字节 (用于 Xmodem 协议应答)
@@ -79,9 +73,6 @@ uint8_t OTA_SendByte(uint8_t byte);
  */
 uint8_t OTA_DebugSend(const char *data);
 
-/** @defgroup OTA_Transport_Interface
- * @{
- */
 /**
  * @brief  从传输缓冲区读取一个字节
  * @return 接收到的字节
@@ -93,9 +84,6 @@ uint8_t OTA_TransReadByte(void);
  * @return 1: 为空, 0: 有数据
  */
 uint8_t OTA_IsTransEmpty(void);
-/**
- * @}
- */
 
 /**
  * @brief  毫秒级延时函数

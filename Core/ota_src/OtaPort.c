@@ -12,11 +12,9 @@
  *
  ******************************************************************************
  */
-
-#include "OtaPort.h"
+#include "OtaInterface.h"
 #include "OtaXmodem.h"
 #include "OtaUtils.h"
-#include "stm32f10x_flash.h"
 
 /**
  * @brief  判断是否应进入 IAP 模式
@@ -24,7 +22,7 @@
  */
 uint8_t OTA_ShouldEnterIap(void)
 {
-	return GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_11);
+	
 }
 
 /**
@@ -51,9 +49,7 @@ void OTA_ReceiveTask(uint8_t byte)
  */
 uint8_t OTA_FlashUnlock(void)
 {
-    FLASH_Unlock();
-    FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR);
-    return 0;
+    
 }
 
 /**
@@ -62,8 +58,7 @@ uint8_t OTA_FlashUnlock(void)
  */
 uint8_t OTA_FlashLock(void)
 {
-	FLASH_Lock();
-    return 0;
+	
 }
 
 /**
@@ -73,7 +68,7 @@ uint8_t OTA_FlashLock(void)
  */
 int OTA_ErasePage(uint32_t addr)
 {
-    return (FLASH_ErasePage(addr) == FLASH_COMPLETE) ? 0 : 1;
+    
 }
 
 /**
@@ -84,7 +79,7 @@ int OTA_ErasePage(uint32_t addr)
  */
 int OTA_DrvProgramHalfword(uint32_t addr, uint16_t data)
 {
-    return (FLASH_ProgramHalfWord(addr, data) == FLASH_COMPLETE) ? 0 : 1;
+    
 }
 
 /**
@@ -95,7 +90,7 @@ int OTA_DrvProgramHalfword(uint32_t addr, uint16_t data)
  */
 void OTA_DrvRead(uint32_t addr, uint8_t *buf, uint16_t len)
 {
-	OTA_MemCopy(buf,(uint8_t *)addr, len);
+	
 }
 
 /**
@@ -105,9 +100,7 @@ void OTA_DrvRead(uint32_t addr, uint8_t *buf, uint16_t len)
  */
 uint8_t OTA_SendByte(uint8_t byte)
 {
-    while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
-    USART_SendData(USART1, byte);
-    return 0; 
+    
 }
 
 /**
@@ -117,14 +110,7 @@ uint8_t OTA_SendByte(uint8_t byte)
  */
 uint8_t OTA_DebugSend(const char *data)
 {
-    if (!data) return 0;
-    while (*data)
-    {
-        while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
-        USART_SendData(USART2, *data++);
-    }
-
-    return 1;
+    
 }
 
 /**
@@ -133,9 +119,5 @@ uint8_t OTA_DebugSend(const char *data)
  */
 void OTA_Delay1ms(void)
 {
-    volatile uint32_t count = 8000;
-    while (count--)
-    {
-        __NOP();
-    }
+    
 }

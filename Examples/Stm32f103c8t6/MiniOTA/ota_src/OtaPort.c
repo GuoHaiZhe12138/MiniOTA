@@ -12,11 +12,9 @@
  *
  ******************************************************************************
  */
-
-#include "OtaPort.h"
+#include "OtaInterface.h"
 #include "OtaXmodem.h"
 #include "OtaUtils.h"
-#include "stm32f10x_flash.h"
 
 /**
  * @brief  判断是否应进入 IAP 模式

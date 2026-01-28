@@ -16,7 +16,7 @@
 #ifndef OTAJUMP_H
 #define OTAJUMP_H
 
-#include "OtaUtils.h"   /* 包含公共定义，包括 OTA_APP_CHECK_RESULT_E 和 pFunction */
+#include "OtaUtils.h"
 
 /**
  * @brief  跳转到目标应用
