@@ -16,6 +16,7 @@
 #define __MINI_OTA_LAYOUT_H__
 
 #include "OtaInterface.h"
+#include "OtaUtils.h"
 
 typedef struct {
     uint32_t count;
@@ -25,7 +26,7 @@ typedef struct {
 typedef struct {
     uint32_t start_addr;    // 起始地址
     uint32_t total_size;    // 总大小
-    uint8_t  is_uniform;    // 是否均匀分布
+    OTA_BOOL  is_uniform;    // 是否均匀分布
     uint32_t group_count;   // 扇区组数量
     const MiniOTA_SectorGroup *groups;
 } MiniOTA_FlashLayout;

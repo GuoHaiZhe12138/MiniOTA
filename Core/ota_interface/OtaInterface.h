@@ -27,7 +27,7 @@
  *  CMSIS 设备头文件配置
  * =====================================================================
  *  本框架只依赖 ARM CMSIS-Core，不直接依赖任何厂商 HAL。
- *  用户【必须】在此处包含且仅包含一个 CMSIS 设备头文件，
+ *  你【必须】在此处包含且仅包含一个 CMSIS 设备头文件，
  *  该头文件通常由芯片厂商提供，用于描述具体 MCU 的内核配置。
  *
  *  示例（根据所用芯片选择其一）：
@@ -36,9 +36,6 @@
  *      #include "stm32f407xx.h"   // STM32F4，Cortex-M4
  *      #include "gd32f30x.h"      // GD32，Cortex-M3
  *      #include "sam3x8e.h"       // Microchip SAM3，Cortex-M3
- *  要求：
- *    - 该头文件必须符合 CMSIS 规范
- *    - 内部应正确包含 core_cmX.h（X = 3 / 4 / 7 等）
  *  注意：
  *    - ❌ 不要在此处直接包含 core_cmX.h
  *    - ❌ 不要包含 HAL / 外设驱动头文件 */
@@ -66,34 +63,6 @@
 
 /* Flash 页大小 (Cortex-M3 常用 1024 或 2048) */
 #define OTA_FLASH_PAGE_SIZE       1024
-/**
- * @}
- */
-
-
-/** @defgroup OTA_Internal_Memory_Map
- * @{
- */
-/* 状态区(Meta)大小: 占用一页 */
-#define OTA_META_SIZE             OTA_FLASH_PAGE_SIZE
-
-/* 状态区(Meta)起始地址 */
-#define OTA_META_ADDR             OTA_TOTAL_START_ADDRESS
-
-/* APP 分区(A+B)的起始地址 */
-#define OTA_APP_REGION_ADDR       (OTA_META_ADDR + OTA_META_SIZE)
-
-/* APP 分区(A+B)的总可用空间 */
-#define OTA_APP_REGION_SIZE       (OTA_FLASH_SIZE - (OTA_APP_REGION_ADDR - OTA_FLASH_START_ADDRESS))
-
-/* 单个 APP 分区的大小 (对齐到页) */
-#define OTA_APP_SLOT_SIZE         ((OTA_APP_REGION_SIZE / 2) / OTA_FLASH_PAGE_SIZE * OTA_FLASH_PAGE_SIZE)
-
-/* APP_A 分区起始地址 */
-#define OTA_APP_A_ADDR            OTA_APP_REGION_ADDR
-
-/* APP_B 分区起始地址 */
-#define OTA_APP_B_ADDR            (OTA_APP_A_ADDR + OTA_APP_SLOT_SIZE)
 /**
  * @}
  */

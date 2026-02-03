@@ -24,6 +24,41 @@
 #define OTA_MAGIC_NUM       0x5A5A0001  /**< Meta 数据有效性识别魔数 */
 #define APP_MAGIC_NUM       0x424C4150  /**< "BLAP" - BootLoader APp 固件头魔数 */
 #define U32_INVALID         0UL         /**< 32位无效值 */
+#define OTA_1KB             1024U       /**< 1KB 大小定义 */
+
+/** @defgroup OTA_Internal_Memory_Map
+ * @{
+ */
+/* 状态区(Meta)大小: 占用一页 */
+#define OTA_META_SIZE             OTA_FLASH_PAGE_SIZE
+
+/* 状态区(Meta)起始地址 */
+#define OTA_META_ADDR             OTA_TOTAL_START_ADDRESS
+
+/* APP 分区(A+B)的起始地址 */
+#define OTA_APP_REGION_ADDR       (OTA_META_ADDR + OTA_META_SIZE)
+
+/* APP 分区(A+B)的总可用空间 */
+#define OTA_APP_REGION_SIZE       (OTA_FLASH_SIZE - (OTA_APP_REGION_ADDR - OTA_FLASH_START_ADDRESS))
+
+/* 单个 APP 分区的大小 (对齐到页) */
+#define OTA_APP_SLOT_SIZE         ((OTA_APP_REGION_SIZE / 2) / OTA_FLASH_PAGE_SIZE * OTA_FLASH_PAGE_SIZE)
+
+/* APP_A 分区起始地址 */
+#define OTA_APP_A_ADDR            OTA_APP_REGION_ADDR
+
+/* APP_B 分区起始地址 */
+#define OTA_APP_B_ADDR            (OTA_APP_A_ADDR + OTA_APP_SLOT_SIZE)
+
+/**
+ * @brief 布尔类型枚举
+ */
+typedef enum __OTA_BOOL_E
+{
+    OTA_FALSE = 0,
+    OTA_TRUE  = 1
+} OTA_BOOL_E;
+typedef uint8_t OTA_BOOL;
 
 /**
  * @brief App 分区状态枚举
