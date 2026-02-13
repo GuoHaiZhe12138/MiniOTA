@@ -45,11 +45,18 @@
  *    - ❌ 不要包含 HAL / 外设驱动头文件 */
 #include "stm32f4xx.h"
 
-/* Flash 总大小 */
-#define OTA_FLASH_SIZE            0x8000
+/* Flash 总大小（STM32F411CEU6 主存 512KB） */
+#define OTA_FLASH_SIZE            (512U * 1024U)
 
 /* Flash 物理起始地址 */
 #define OTA_FLASH_START_ADDRESS   0x08000000UL
+
+/* F411 使用非均匀扇区，采用手动模式 */
+#define OTA_FLASH_MODE            OTA_FLASH_MODE_MANUAL
+
+/* 手动模式：最后一个 128K 扇区作为缓冲区（Sector7: 0x08060000） */
+#define OTA_BUFFER_SECTOR_START   0x08060000UL
+#define OTA_BUFFER_SECTOR_SIZE   (128U * 1024U)
 
 /* 分配给 MiniOTA (Meta + APP_A + APP_B) 的起始地址 */
 #define OTA_TOTAL_START_ADDRESS   0x08003000UL
@@ -57,8 +64,11 @@
 /* MiniOTA 管理区域的最大大小(字节) */
 #define OTA_APP_MAX_SIZE          (OTA_FLASH_SIZE - (OTA_TOTAL_START_ADDRESS - OTA_FLASH_START_ADDRESS))
 
-/* Flash 页大小 (Cortex-M3 常用 1024 或 2048) */
+/* Flash 页大小（与 Xmodem 包对齐，如 1024） */
 #define OTA_FLASH_PAGE_SIZE       1024
+
+/* 引入 F411 Flash 布局模板，供 Core 层布局与手动模式使用 */
+#include "ota_flash_template/stm32f411/stm32f411.h"
 /**
  * @}
  */

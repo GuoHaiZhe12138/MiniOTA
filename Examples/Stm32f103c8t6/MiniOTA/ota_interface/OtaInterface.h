@@ -62,6 +62,9 @@
 
 /* Flash 页大小 (Cortex-M3 常用 1024 或 2048) */
 #define OTA_FLASH_PAGE_SIZE       1024
+
+/* 引入 F103 Flash 布局模板，供 Core 层布局一致性检查与自动模式使用 */
+#include "ota_flash_template/stm32f103/stm32f103.h"
 /**
  * @}
  */

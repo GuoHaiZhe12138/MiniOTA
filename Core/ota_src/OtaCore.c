@@ -18,6 +18,7 @@
 #include "OtaJump.h"
 #include "OtaUtils.h"
 #include "OtaFlash.h"
+#include "OtaFlashIfoDef.h"
 
 /**
  * @brief  验证 App 分区的完整性和有效性
