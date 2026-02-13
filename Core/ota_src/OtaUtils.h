@@ -26,6 +26,18 @@
 #define U32_INVALID         0UL         /**< 32位无效值 */
 #define OTA_1KB             1024U       /**< 1KB 大小定义 */
 
+/* Flash 写入模式：自动 / 手动
+ *  - 自动模式（AUTO）：适用于页大小固定、擦除粒度与页一致或可视为一致的 Flash（如 STM32F1）
+ *  - 手动模式（MANUAL）：适用于非均匀扇区，需要依赖 MiniOTA_FlashLayout 进行地址映射（如 STM32F411）
+ */
+#define OTA_FLASH_MODE_AUTO      0U
+#define OTA_FLASH_MODE_MANUAL    1U
+
+#ifndef OTA_FLASH_MODE
+/* 默认使用自动模式；具体工程可在其 OtaInterface.h 中重定义为 MANUAL */
+#define OTA_FLASH_MODE           OTA_FLASH_MODE_AUTO
+#endif
+
 /** @defgroup OTA_Internal_Memory_Map
  * @{
  */

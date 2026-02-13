@@ -51,6 +51,9 @@
 /* Flash 物理起始地址 */
 #define OTA_FLASH_START_ADDRESS   0x08000000UL
 
+/* F1 设备使用均匀页 Flash，直接采用自动模式 */
+#define OTA_FLASH_MODE            OTA_FLASH_MODE_AUTO
+
 /* 分配给 MiniOTA (Meta + APP_A + APP_B) 的起始地址 */
 #define OTA_TOTAL_START_ADDRESS   0x08003000UL
 

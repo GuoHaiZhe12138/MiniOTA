@@ -2,31 +2,22 @@
 #include "OtaInterface.h"
 #include "OtaUtils.h"
 
-static const MiniOTA_SectorGroup F103Ser[9] = {
-    {16, OTA_1KB},  // 16KB
-    {16, OTA_1KB},  // 32KB
-    {32, OTA_1KB},  // 64KB
-    {64, OTA_1KB},  // 128KB
-    {64, 2 * OTA_1KB},  // 256KB
-    {64, 2 * OTA_1KB},  // 384KB
-    {64, 2 * OTA_1KB},  // 512KB
-    {128, 2 * OTA_1KB}, // 768KB
-    {128, 2 * OTA_1KB}  // 1MB
+/**
+ * 对于 STM32F103，主 Flash 以固定页大小均匀分布（通常为 1KB/2KB 页擦除），
+ * 在 MiniOTA 中可以直接视为“均匀页 Flash”：
+ *  - （扇区/页）大小 = OTA_FLASH_PAGE_SIZE
+ *  - （扇区/页）数量 = OTA_FLASH_SIZE / OTA_FLASH_PAGE_SIZE
+ *
+ * 因此这里将布局简化为单一均匀分组，便于自动模式直接按页计算。
+ */static const MiniOTA_SectorGroup F103Ser[] = {
+    { OTA_FLASH_SIZE / OTA_FLASH_PAGE_SIZE, OTA_FLASH_PAGE_SIZE },
 };
-
 static const MiniOTA_FlashLayout F103_Low_Layout = {
     .start_addr = OTA_FLASH_START_ADDRESS,
     .total_size = OTA_FLASH_SIZE,
-    .is_uniform = OTA_FALSE,
-    .group_count = (OTA_FLASH_SIZE <= 16 * OTA_1KB)  ? 1 :
-                   (OTA_FLASH_SIZE <= 32 * OTA_1KB)  ? 2 :
-                   (OTA_FLASH_SIZE <= 64 * OTA_1KB)  ? 3 :
-                   (OTA_FLASH_SIZE <= 128 * OTA_1KB) ? 4 :
-                   (OTA_FLASH_SIZE <= 256 * OTA_1KB) ? 5 :
-                   (OTA_FLASH_SIZE <= 384 * OTA_1KB) ? 6 :
-                   (OTA_FLASH_SIZE <= 512 * OTA_1KB) ? 7 :
-                   (OTA_FLASH_SIZE <= 768 * OTA_1KB) ? 8 : 9,
-    .groups = F103Ser
+    .is_uniform = OTA_TRUE,
+    .group_count = (uint32_t)(sizeof(F103Ser) / sizeof(F103Ser[0])),
+    .groups = F103Ser,
 };
 
 const MiniOTA_FlashLayout* MiniOTA_GetLayout(void) 

@@ -140,6 +140,7 @@ static uint8_t OTA_IsUserSetingsValid(void)
 {
     uint32_t flash_end = OTA_FLASH_START_ADDRESS + OTA_FLASH_SIZE - 1;
     uint32_t app_max_size = OTA_APP_MAX_SIZE;
+    const MiniOTA_FlashLayout *layout = MiniOTA_GetLayout();
 
     /* 分配给MiniOTA的flash空间必须位于 Flash 内 */
     if (OTA_TOTAL_START_ADDRESS < OTA_FLASH_START_ADDRESS ||
@@ -162,6 +163,35 @@ static uint8_t OTA_IsUserSetingsValid(void)
 		OTA_DebugSend("[OTA][Error]:In OtaInterface - MiniOTA available flash storage space must be larger than one Flash page.\r\n");
         return OTA_ERR_SIZE;
     }
+
+    /* 布局一致性与范围检查 */
+    if (layout == OTA_NULL)
+    {
+        OTA_DebugSend("[OTA][Error]:Flash layout is NULL, please check ota_flash_template.\r\n");
+        return OTA_ERR_FLASH_RANGE;
+    }
+
+    if ((layout->start_addr != OTA_FLASH_START_ADDRESS) ||
+        (layout->total_size != OTA_FLASH_SIZE))
+    {
+        OTA_DebugSend("[OTA][Error]:Flash layout mismatch with OtaInterface settings.\r\n");
+        return OTA_ERR_FLASH_RANGE;
+    }
+
+    /* 确认 APP A/B 区间均落在布局描述范围内 */
+    //{
+        uint32_t layout_start = layout->start_addr;
+        uint32_t layout_end   = layout->start_addr + layout->total_size;
+
+        if (OTA_APP_A_ADDR < layout_start ||
+            (OTA_APP_A_ADDR + OTA_APP_SLOT_SIZE) > layout_end ||
+            OTA_APP_B_ADDR < layout_start ||
+            (OTA_APP_B_ADDR + OTA_APP_SLOT_SIZE) > layout_end)
+        {
+            OTA_DebugSend("[OTA][Error]:App region is out of flash layout range.\r\n");
+            return OTA_ERR_FLASH_RANGE;
+        }
+    //}
 
     return OTA_OK;
 }
