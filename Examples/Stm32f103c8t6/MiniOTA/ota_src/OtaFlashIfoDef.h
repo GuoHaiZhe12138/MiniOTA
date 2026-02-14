@@ -12,8 +12,8 @@
  *
  ******************************************************************************
  */
-#ifndef __MINI_OTA_LAYOUT_H__
-#define __MINI_OTA_LAYOUT_H__
+#ifndef __OTAFLASHIFODEF_H__
+#define __OTAFLASHIFODEF_H__
 
 #include "OtaInterface.h"
 #include "OtaUtils.h"

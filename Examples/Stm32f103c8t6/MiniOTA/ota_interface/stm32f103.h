@@ -21,7 +21,7 @@ static const MiniOTA_FlashLayout F103_Low_Layout = {
     .groups = F103Ser,
 };
 
-const MiniOTA_FlashLayout* MiniOTA_GetLayout(void) 
+static inline const MiniOTA_FlashLayout* MiniOTA_GetLayout(void)
 {
     return &F103_Low_Layout;
 }

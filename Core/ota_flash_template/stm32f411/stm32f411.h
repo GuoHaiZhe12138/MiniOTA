@@ -29,7 +29,7 @@ static const MiniOTA_FlashLayout F411_B_Layout = {
     .groups = F411Ser
 };
 
-const MiniOTA_FlashLayout* MiniOTA_GetLayout(void)
-{ 
+static inline const MiniOTA_FlashLayout* MiniOTA_GetLayout(void)
+{
     return &F411_B_Layout;
 }

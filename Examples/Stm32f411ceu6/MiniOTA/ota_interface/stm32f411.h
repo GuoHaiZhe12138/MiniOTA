@@ -26,10 +26,10 @@ static const MiniOTA_FlashLayout F411_B_Layout = {
     .total_size = OTA_FLASH_SIZE,
     .is_uniform = OTA_FALSE,
     .group_count = (OTA_FLASH_SIZE <= 256 * OTA_1KB) ? 3 : 5,
-    .groups = F411Ser
+    .groups = F411Ser,
 };
 
-const MiniOTA_FlashLayout* MiniOTA_GetLayout(void)
-{ 
+static inline const MiniOTA_FlashLayout* MiniOTA_GetLayout(void)
+{
     return &F411_B_Layout;
 }

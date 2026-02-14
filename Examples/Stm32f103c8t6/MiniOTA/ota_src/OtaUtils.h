@@ -45,8 +45,10 @@
 /** @defgroup OTA_Internal_Memory_Map
  * @{
  */
-/* 状态区(Meta)大小: 占用一页 */
+/* 状态区(Meta)大小: 默认占用一页；F4 等按扇区擦除的芯片可在 OtaInterface.h 中重定义为整扇区 */
+#ifndef OTA_META_SIZE
 #define OTA_META_SIZE             OTA_FLASH_PAGE_SIZE
+#endif
 
 /* 状态区(Meta)起始地址 */
 #define OTA_META_ADDR             OTA_TOTAL_START_ADDRESS
@@ -54,8 +56,10 @@
 /* APP 分区(A+B)的起始地址 */
 #define OTA_APP_REGION_ADDR       (OTA_META_ADDR + OTA_META_SIZE)
 
-/* APP 分区(A+B)的总可用空间 */
+/* APP 分区(A+B)的总可用空间；F4 等若将缓冲扇区划出，可在 OtaInterface.h 中先于本头文件重定义 */
+#ifndef OTA_APP_REGION_SIZE
 #define OTA_APP_REGION_SIZE       (OTA_FLASH_SIZE - (OTA_APP_REGION_ADDR - OTA_FLASH_START_ADDRESS))
+#endif
 
 /* 单个 APP 分区的大小 (对齐到页) */
 #define OTA_APP_SLOT_SIZE         ((OTA_APP_REGION_SIZE / 2) / OTA_FLASH_PAGE_SIZE * OTA_FLASH_PAGE_SIZE)

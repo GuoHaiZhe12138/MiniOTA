@@ -13,6 +13,7 @@
 static const MiniOTA_SectorGroup F103Ser[] = {
     { OTA_FLASH_SIZE / OTA_FLASH_PAGE_SIZE, OTA_FLASH_PAGE_SIZE },
 };
+
 static const MiniOTA_FlashLayout F103_Low_Layout = {
     .start_addr = OTA_FLASH_START_ADDRESS,
     .total_size = OTA_FLASH_SIZE,
@@ -21,7 +22,7 @@ static const MiniOTA_FlashLayout F103_Low_Layout = {
     .groups = F103Ser,
 };
 
-const MiniOTA_FlashLayout* MiniOTA_GetLayout(void) 
+static inline const MiniOTA_FlashLayout* MiniOTA_GetLayout(void)
 {
     return &F103_Low_Layout;
 }

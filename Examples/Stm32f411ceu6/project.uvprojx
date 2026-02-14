@@ -725,6 +725,16 @@
               <FileType>5</FileType>
               <FilePath>.\MiniOTA\ota_interface\OtaPort.h</FilePath>
             </File>
+            <File>
+              <FileName>OtaFlashIfoDef.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\MiniOTA\ota_src\OtaFlashIfoDef.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f411.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\MiniOTA\ota_interface\stm32f411.h</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

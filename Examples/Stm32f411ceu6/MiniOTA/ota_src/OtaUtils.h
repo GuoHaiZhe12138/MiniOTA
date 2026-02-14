@@ -24,6 +24,61 @@
 #define OTA_MAGIC_NUM       0x5A5A0001  /**< Meta 数据有效性识别魔数 */
 #define APP_MAGIC_NUM       0x424C4150  /**< "BLAP" - BootLoader APp 固件头魔数 */
 #define U32_INVALID         0UL         /**< 32位无效值 */
+#define OTA_1KB             1024U       /**< 1KB 大小定义 */
+
+#ifndef OTA_NULL
+#define OTA_NULL             ((void *)0)
+#endif
+
+/* Flash 写入模式：自动 / 手动
+ *  - 自动模式（AUTO）：适用于页大小固定、擦除粒度与页一致或可视为一致的 Flash（如 STM32F1）
+ *  - 手动模式（MANUAL）：适用于非均匀扇区，需要依赖 MiniOTA_FlashLayout 进行地址映射（如 STM32F411）
+ */
+#define OTA_FLASH_MODE_AUTO      0U
+#define OTA_FLASH_MODE_MANUAL    1U
+
+#ifndef OTA_FLASH_MODE
+/* 默认使用自动模式；具体工程可在其 OtaInterface.h 中重定义为 MANUAL */
+#define OTA_FLASH_MODE           OTA_FLASH_MODE_AUTO
+#endif
+
+/** @defgroup OTA_Internal_Memory_Map
+ * @{
+ */
+/* 状态区(Meta)大小: 默认占用一页；F4 等按扇区擦除的芯片可在 OtaInterface.h 中重定义为整扇区 */
+#ifndef OTA_META_SIZE
+#define OTA_META_SIZE             OTA_FLASH_PAGE_SIZE
+#endif
+
+/* 状态区(Meta)起始地址 */
+#define OTA_META_ADDR             OTA_TOTAL_START_ADDRESS
+
+/* APP 分区(A+B)的起始地址 */
+#define OTA_APP_REGION_ADDR       (OTA_META_ADDR + OTA_META_SIZE)
+
+/* APP 分区(A+B)的总可用空间；F4 等若将缓冲扇区划出，可在 OtaInterface.h 中先于本头文件重定义 */
+#ifndef OTA_APP_REGION_SIZE
+#define OTA_APP_REGION_SIZE       (OTA_FLASH_SIZE - (OTA_APP_REGION_ADDR - OTA_FLASH_START_ADDRESS))
+#endif
+
+/* 单个 APP 分区的大小 (对齐到页) */
+#define OTA_APP_SLOT_SIZE         ((OTA_APP_REGION_SIZE / 2) / OTA_FLASH_PAGE_SIZE * OTA_FLASH_PAGE_SIZE)
+
+/* APP_A 分区起始地址 */
+#define OTA_APP_A_ADDR            OTA_APP_REGION_ADDR
+
+/* APP_B 分区起始地址 */
+#define OTA_APP_B_ADDR            (OTA_APP_A_ADDR + OTA_APP_SLOT_SIZE)
+
+/**
+ * @brief 布尔类型枚举
+ */
+typedef enum __OTA_BOOL_E
+{
+    OTA_FALSE = 0,
+    OTA_TRUE  = 1
+} OTA_BOOL_E;
+typedef uint8_t OTA_BOOL;
 
 /**
  * @brief App 分区状态枚举
@@ -96,11 +151,11 @@ typedef struct __OTA_META_DATA
  */
 typedef void (*pFunction)(void);
 
-
 void OTA_U8ArryCopy(uint8_t *dst, const uint8_t *src, uint32_t len);
 uint16_t OTA_GetCrc16(const uint8_t *buf, uint32_t len);
 void OTA_MemSet(uint8_t *dst, uint8_t val, uint32_t len);
 void OTA_MemCopy(uint8_t *dst, const uint8_t *src, uint32_t len);
 void OTA_PrintHex32(uint32_t value);
+
 
 #endif
