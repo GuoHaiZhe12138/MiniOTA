@@ -6,7 +6,7 @@
  *          包含 Flash 分区布局定义、App 起始地址及全局 OTA 运行接口
  ******************************************************************************
  * @attention
- * 
+ *
  * Copyright (c) 2026 MiniOTA.
  * All rights reserved.
  *
@@ -23,12 +23,11 @@
  * @{
  */
 
-/*
- * =====================================================================
+/* =====================================================================
  *  CMSIS 设备头文件配置
  * =====================================================================
  *  本框架只依赖 ARM CMSIS-Core，不直接依赖任何厂商 HAL。
- *  用户【必须】在此处包含且仅包含一个 CMSIS 设备头文件，
+ *  你【必须】在此处包含且仅包含一个 CMSIS 设备头文件，
  *  该头文件通常由芯片厂商提供，用于描述具体 MCU 的内核配置。
  *
  *  示例（根据所用芯片选择其一）：
@@ -37,55 +36,56 @@
  *      #include "stm32f407xx.h"   // STM32F4，Cortex-M4
  *      #include "gd32f30x.h"      // GD32，Cortex-M3
  *      #include "sam3x8e.h"       // Microchip SAM3，Cortex-M3
- *  要求：
- *    - 该头文件必须符合 CMSIS 规范
- *    - 内部应正确包含 core_cmX.h（X = 3 / 4 / 7 等）
  *  注意：
  *    - ❌ 不要在此处直接包含 core_cmX.h
  *    - ❌ 不要包含 HAL / 外设驱动头文件 */
 #include "stm32f10x.h"
 
+/* ---------------------------------------------------------------------
+ *  以下宏必须在 #include "stm32f103.h" 之前定义，供布局模板使用
+ *  - stm32f103.h 内会使用 OTA_FLASH_START_ADDRESS、OTA_FLASH_SIZE
+ *  - 其间接包含的 OtaUtils.h 会使用 OTA_FLASH_PAGE_SIZE、OTA_META_SIZE 等
+ * ---------------------------------------------------------------------
+ */
 /* Flash 总大小 */
 #define OTA_FLASH_SIZE            0x8000
 
 /* Flash 物理起始地址 */
 #define OTA_FLASH_START_ADDRESS   0x08000000UL
 
-/* 分配给 MiniOTA (Meta + APP_A + APP_B) 的起始地址 */
+/* Flash 页大小 (Cortex-M3 常用 1024 或 2048) */
+#define OTA_FLASH_PAGE_SIZE       1024
+
+/* F1 设备使用均匀页 Flash */
+#define OTA_FLASH_FORMAT            0 /* OTA_FLASH_FORMAT_UNIFORM */
+//#define OTA_FLASH_FORMAT            1 /* OTA_FLASH_FORMAT_NOT_UNIFORM */
+
+/* (模板示例, 请参考f411例程) F411：Meta 独占 Sector1(16K)，APP 从 Sector2 开始；缓冲扇区为 Sector7(128K) */
+#if (OTA_FLASH_FORMAT == 1)
+#define OTA_META_SIZE             (16U * 1024U)
+#define OTA_APP_REGION_SIZE       (352U * 1024U)
+#endif
+
+/* (模板示例, 请参考f411例程) F411：最后一个 128K 扇区作为缓冲区（Sector7: 0x08060000） */
+#if (OTA_FLASH_FORMAT == 1)
+#define OTA_BUFFER_SECTOR_START   0x08060000UL  //(16*4+64+128*2)*1024=60000(HEX)
+#define OTA_BUFFER_SECTOR_SIZE   (128U * 1024U)
+#endif
+
+/* (模板示例, 请参考f411例程) F411：暂定APP_A大小为224kB */
+#if (OTA_FLASH_FORMAT == 1)
+#define OTA_APP_SLOT_SIZE         (224U * 1024U)
+#endif
+
+/* 分配给 MiniOTA (Meta + APP_A + APP_B) 的起始地址 
+ * F1 按页擦除 */
 #define OTA_TOTAL_START_ADDRESS   0x08003000UL
+
+/* 引入 F103 Flash 布局模板 */
+#include "stm32f103_md.h"
 
 /* MiniOTA 管理区域的最大大小(字节) */
 #define OTA_APP_MAX_SIZE          (OTA_FLASH_SIZE - (OTA_TOTAL_START_ADDRESS - OTA_FLASH_START_ADDRESS))
-
-/* Flash 页大小 (Cortex-M3 常用 1024 或 2048) */
-#define OTA_FLASH_PAGE_SIZE       1024
-/**
- * @}
- */
-
-/** @defgroup OTA_Internal_Memory_Map
- * @{
- */
-/* 状态区(Meta)大小: 占用一页 */
-#define OTA_META_SIZE             OTA_FLASH_PAGE_SIZE
-
-/* 状态区(Meta)起始地址 */
-#define OTA_META_ADDR             OTA_TOTAL_START_ADDRESS
-
-/* APP 分区(A+B)的起始地址 */
-#define OTA_APP_REGION_ADDR       (OTA_META_ADDR + OTA_META_SIZE)
-
-/* APP 分区(A+B)的总可用空间 */
-#define OTA_APP_REGION_SIZE       (OTA_FLASH_SIZE - (OTA_APP_REGION_ADDR - OTA_FLASH_START_ADDRESS))
-
-/* 单个 APP 分区的大小 (对齐到页) */
-#define OTA_APP_SLOT_SIZE         ((OTA_APP_REGION_SIZE / 2) / OTA_FLASH_PAGE_SIZE * OTA_FLASH_PAGE_SIZE)
-
-/* APP_A 分区起始地址 */
-#define OTA_APP_A_ADDR            OTA_APP_REGION_ADDR
-
-/* APP_B 分区起始地址 */
-#define OTA_APP_B_ADDR            (OTA_APP_A_ADDR + OTA_APP_SLOT_SIZE)
 /**
  * @}
  */

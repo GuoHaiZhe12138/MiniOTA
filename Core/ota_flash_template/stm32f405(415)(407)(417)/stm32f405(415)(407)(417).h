@@ -13,6 +13,7 @@ static const MiniOTA_SectorGroup F405_415_Ser[] = {
     {1, 128*1024},  // 896KB
     {1, 128*1024},  // 1024KB
 };
+
 static const MiniOTA_FlashLayout F405_B_Layout = {
     .start_addr = OTA_FLASH_START_ADDRESS,
     .total_size = OTA_FLASH_SIZE,
@@ -20,7 +21,8 @@ static const MiniOTA_FlashLayout F405_B_Layout = {
     .group_count = (OTA_FLASH_SIZE <= 512 * OTA_1KB) ? 5 : 9
     .groups = F405_415_Ser
 };
-const MiniOTA_FlashLayout* MiniOTA_GetLayout(void)
+
+static inline const MiniOTA_FlashLayout* MiniOTA_GetLayout(void)
 { 
     return &F405_B_Layout;
 }
